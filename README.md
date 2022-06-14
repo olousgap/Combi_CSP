@@ -1,2 +1,2 @@
 # Combi_CSP
-Combined Concentrating Solar Power dynamic model
+CombiCSP is an open source software for dynamic modelling of concentrating solar energy power plants. CombiCSP utilizes solar resource, system engineering inputs as well as financial tools to provide dynamic simulations and annual yields of concentrating solar power plants. It readily provides modelling of plants based on solar power tower and parabolic trough collectors and it can be extended to novel solar energy modeling approaches and analyses as needed.
