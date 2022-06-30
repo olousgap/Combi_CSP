@@ -52,7 +52,7 @@ def CtoK(c: float|int):
     return k
     
 def solarII(Ib,Trans,IAM,A_helio:float,Ar:float)->float:
-    """Calculates the power of the solar tower
+    """Calculates the power of the solar tower with heliostat
  
     R.K. McGovern, W.J. Smith, Optimal concentration and temperatures of solar thermal power plants,
     Energy Conversion and Management. 60 (2012) 226–232.
@@ -101,6 +101,8 @@ def solarII(Ib,Trans,IAM,A_helio:float,Ar:float)->float:
     else:
         P = Qnet * nR * nG
     return P/1e6 # convert W to MW
+
+#%% Incidence angle methods
 
 def IAM_tow(hoy:np.array=sgh.HOYS_DEFAULT)->float : 
     """Incidence angle modifier of Tower (azimuth)
@@ -275,7 +277,7 @@ def thetai_transversal(hoy:np.array=sgh.HOYS_DEFAULT):
 def thetai_longtitudinal(hoy:np.array=sgh.HOYS_DEFAULT): 
     return np.arcsin(cos(azim(hoy))*cos(ele(hoy)))
 
-
+#%% ==================================== solar collector dimenstions
 def Ac(Wc:float, L:float, N:int): 
     """returns the collector area. 
 
@@ -350,6 +352,7 @@ def end_loss(f,L,N, hoy:np.array=sgh.HOYS_DEFAULT):
 #     #solution = solve(equation.subs(input_dict), dict=True)
 #     return equation
 
+#%% total power of parabolic system
 def di_sst(Ib,costhetai,IAM,Tr, Wc, Wr, Ws, L, N):
     """Calculates the total power of the parabolic system
 
@@ -439,7 +442,18 @@ def CSCUL(hoys): # CSC heat loss ex.4.2
         UL = Qloss / (pi * Dr * L * (CtoK(Tr) - Ta))
     return UL # [W/m2K]
 
-def CSCP(Tfi, hoy:np.array= sgh.HOYS_DEFAULT, fname:str="example_data/tmy_35.015_25.755_2005_2020.csv"): # CSC thermal power ex.4.3
+def CSCP(Tfi, hoy:np.array= sgh.HOYS_DEFAULT, fname:str="example_data/tmy_35.015_25.755_2005_2020.csv"): 
+    # CSC thermal power ex.4.3
+    """Concentrated Solar collect
+
+    Args:
+        Tfi (_type_): _description_
+        hoy (np.array, optional): _description_. Defaults to sgh.HOYS_DEFAULT.
+        fname (str, optional): _description_. Defaults to "example_data/tmy_35.015_25.755_2005_2020.csv".
+
+    Returns:
+        _type_: _description_
+    """    
     '''see also Dikmen, E., Ayaz, M., Ezen, H.H., Küçüksille, E.U., Şahin, A.Ş., 2014. 
     Estimation and optimization of thermal performance of evacuated tube solar collector system. 
     Heat Mass Transfer 50, 711–719. https://doi.org/10.1007/s00231-013-1282-0
@@ -473,7 +487,20 @@ def CSCP(Tfi, hoy:np.array= sgh.HOYS_DEFAULT, fname:str="example_data/tmy_35.015
     DT = Tro - Tfi
     return Tfo#Qu/1000 # convert W to kW
 
+
+#%% storage
+
 def heatloss_Mertins(d,epsilon,dt):
+    """ the heat loss from the receiver
+
+    Args:
+        d (_type_): diameter (m)
+        epsilon (_type_): emmissivity  []
+        dt (_type_): the temperature difference between the tube and ambient [K]
+
+    Returns:
+        _type_: _description_
+    """    
     '''eq.20 in [1]M.J. Montes, R. Barbero, R. Abbas, A. Rovira, 
     Performance model and thermal comparison of different alternatives for the Fresnel single-tube receiver, 
     Applied Thermal Engineering. 104 (2016) 162–175. https://doi.org/10.1016/j.applthermaleng.2016.05.015.
@@ -488,6 +515,7 @@ def pipe_loss():
     # 0.017 * DT - 1.683 * 1e-4 * DT**2 + 6.78 * 1e-7 * DT**3 ref?
     return 0.01693 * DT - 0.0001683 * DT**2 + 6.78 * 1e-7 * DT**3
 
+#%% material properties for stoarge
 #PCM data
 pcm_data = [[2200,2257,2110,2044,2380],
             [212,174,226,149.7,280],
@@ -497,7 +525,9 @@ pcm_data = [[2200,2257,2110,2044,2380],
             [2.553,1.650,1.341,NaN,NaN,NaN],
             [0.2,0.2,0.3,1.0,NaN,0.15]] #NaNO2 assumption
 pcm = pd.DataFrame(pcm_data,
-    columns = ['NaNO2','NaNO3','KNO3','KOH','H250','NaCl'])
+    columns = ['NaNO2','NaNO3','KNO3','KOH','H250','NaCl']
+    #, index = ['density', 'latent_heat', 'melting_point', 'thermal conduct. coeff', 'c_p Solid', 'c_p Liquid', 'cost' ]
+    )
 pcm_rho = pcm['NaNO3'].loc[0]
 pcm_latent_heat = pcm['NaNO3'].loc[1]#*0.27778 # [kJ/kgK to Wh/kgK] https://www.cactus2000.de/uk/unit/masscp1.php
 pcm_melting_point = pcm['NaNO3'].loc[2] # [oC]

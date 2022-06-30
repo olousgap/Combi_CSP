@@ -1,6 +1,14 @@
 # Combi_CSP
 CombiCSP is an open source software for dynamic modelling of concentrating solar energy power plants. CombiCSP utilizes solar resource, system engineering inputs as well as financial tools to provide dynamic simulations and annual yields of concentrating solar power plants. It readily provides modelling of plants based on solar power tower and parabolic trough collectors and it can be extended to novel solar energy modeling approaches and analyses as needed.
 
+# Quick-Start
+
+the `Combi_CSP.ipynb` generates a graphs using functions from the code. 
+
+Additionally, example cases are scripted in the following files:
+- CSPCret.py: heliostat and CSP power and energy outputs in a location in Crete, Greece
+- CSP50Compare.py: Combined heliostat and CSP power and energy outputs in a location in Crete, Greece
+
 
 # installation/setup
 

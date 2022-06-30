@@ -15,7 +15,7 @@ Ecsp = Etrough # 1713.200 [annual MWh] Mosleh19
 mpcm = pcm_rho * 200 #mpcm = pcm_rho * Vpcm # kg/m3 * m3
 
 #Paux = 9 # [MW] T.5 Pantaleo17
-#Eaux = 20 # [MWh]
+Eaux = 20 # [MWh]
 Eoil = Eaux*0.5883 # [BOE] 1MWh = 0.5883BOE https://www.convert-me.com/en/convert/energy/kwh/kwh-to-boe.html?u=kwh&v=1%2C000
 Egas = Eaux*3.412 # [m BTU] 1MWh = 3.412mBTU https://www.convert-me.com/en/convert/energy/kwh/kwh-to-mymmbtu.html?u=kwh&v=1%2C000
 
@@ -34,6 +34,14 @@ energy_price = [[248,268,176,153,185,133,90,87,87],
 energy_price = pd.DataFrame(energy_price,
     columns = ['CSP','CSP+Storage2h','Biomass 1MW','Biomass 5MW',
     'Biogas 1MW','Biogas 5MW','Hydro 3MW','Hydro 15MW','PV6KWroof'])
+
+# energy_price = pd.DataFrame( [[248,268,176,153,185,133,90,87,87],
+#                 [0.09,0.09,0.08,0.074,0.08,0.074,0.08,0.08,0.074]],
+#     columns = ['CSP','CSP+Storage2h','Biomass 1MW','Biomass 5MW',
+#     'Biogas 1MW','Biogas 5MW','Hydro 3MW','Hydro 15MW','PV6KWroof'], index= ['price', 'discount_rate']).transpose()
+
+
+
 csp_energy_price = energy_price['CSP'].loc[0]
 csp_pcm_energy_price = energy_price['CSP+Storage2h'].loc[0]
 csp_discount_rate = energy_price['CSP'].loc[1]
