@@ -28,6 +28,15 @@ mer = -25 # for Greece check to replace with 15 * dt_gmt
 lon = 24 # Crete 35.2401° N, 24.8093° E [east negative, west positive]
 
 #%% ===================================== earth declination angles
+def eda(hoy:np.array=HOYS_DEFAULT, method= 'wiki' ):
+    dic = {'wiki':d,
+           'Katsaprakakis': d2,
+           '-81': d3,
+           'pveducation' :d1
+           }
+    if  method not in dic.keys():
+        raise(ValueError(f"method can be [{dic.keys()}]"))
+    return dic.get(method,None)(hoy)
 
 def d1(hoy:np.array=HOYS_DEFAULT): # earth declination angle [in degrees]
     """earth declination angle 
@@ -78,8 +87,8 @@ def d(hoy:np.array=HOYS_DEFAULT): # [in radians] https://en.wikipedia.org/wiki/S
 
 def EoT(hoy:np.array=HOYS_DEFAULT): # equation of time [in minutes]
     gamma = 360*(hoy-1)/365
-    return 2.2918*(0.0075+0.1868*cos(rad(gamma))-3.2077*sin(rad(gamma))
-    -1.4615*cos(rad(2*gamma))-4.089*sin(rad(2*gamma)))
+    return 2.2918*(0.0075+0.1868*cos(rad(gamma))-3.2077*sin(rad(gamma)) \
+        -1.4615*cos(rad(2*gamma))-4.089*sin(rad(2*gamma)))
 
 def _calculate_simple_day_angle(dayofyear, offset=1):
     """simple method for calculating the solar angle
