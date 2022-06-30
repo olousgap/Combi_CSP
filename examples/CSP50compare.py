@@ -3,8 +3,10 @@ import pathlib
 import pandas as pd
 import numpy as np
 from scipy import integrate
-import CombiCSP.SolarGeometry_hoy as sgh
+import CombiCSP.SolarGeometry as sgh
 from CombiCSP.CSP import *
+import CombiCSP.misc as cspm
+import CombiCSP.economics as cspe
 #import CSP
 #import pcm
 from CSPecon import *
@@ -46,13 +48,13 @@ for A_helio in np.arange(75000,125001,10000): # 100MW np.arange(150000,250001,10
     tow_data = np.vstack((A_helio,Ctow,Ptower,Etower,CF_tow)) # vertical stack
     # economics
     capital_csp_tow = A_helio*csp_area_costs + Ptower*power_block_cost
-    revenue_csp_tow = cashflow(Etower,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tow)
+    revenue_csp_tow = cspe.cashflow(Etower,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tow)
     cash_flow_tow = [-capital_csp_tow] + [revenue_csp_tow for i in range(30)]
-    dpb_tow = discounted_payback_period(csp_discount_rate, cash_flow_tow)
+    dpb_tow = cspe.discounted_payback_period(csp_discount_rate, cash_flow_tow)
     npv_csp_tow = npf.npv(csp_discount_rate, [-capital_csp_tow] 
-    + [cashflow(Etower,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tow) for i in range(30)])
+    + [cspe.cashflow(Etower,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tow) for i in range(30)])
     irr_csp_tow = npf.irr([-capital_csp] 
-    + [cashflow(Etower,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tow) for i in range(30)])
+    + [cspe.cashflow(Etower,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tow) for i in range(30)])
     area_list.append(A_helio)
     cash_flow_list.append(cash_flow_tow)
     tow_scenaria.append((A_helio,Ctow,Ptower,Etower,CF_tow,dpb_tow,npv_csp_tow,irr_csp_tow,cash_flow_tow))
@@ -88,13 +90,13 @@ for N in np.arange(800,1301,100): # 100MW np.arange(1000,2001,100):
     tro_dataew = np.vstack((Ac(Wc, L, N),Cg_tro(Wc, Wr, L, N),Ptroughew,Etroughew,CF_troew)) # vertical stack
     # economics
     capital_csp_tro = area*csp_area_costs + Ptrough*power_block_cost
-    revenue_csp_tro = cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro)
+    revenue_csp_tro = cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro)
     cash_flow_tro = [-capital_csp_tro] + [revenue_csp_tro for i in range(30)]
-    dpb_tro = discounted_payback_period(csp_discount_rate, cash_flow_tro)
+    dpb_tro = cspe.discounted_payback_period(csp_discount_rate, cash_flow_tro)
     npv_csp_tro = npf.npv(csp_discount_rate, [-capital_csp_tro] 
-    + [cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro) for i in range(30)])
+    + [cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro) for i in range(30)])
     irr_csp_tro = npf.irr([-capital_csp_tro] 
-    + [cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro) for i in range(30)])
+    + [cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro) for i in range(30)])
     area_list.append(area)
     cash_flow_list.append(cash_flow_tro)
     trough_scenaria.append((Ac(Wc, L, N),Cg_tro(Wc, Wr, L, N),Ptrough,Etrough,CF_tro,dpb_tro,npv_csp_tro,irr_csp_tro,cash_flow_tro))
@@ -105,7 +107,7 @@ show()
 
 DPB = []
 for (x,y) in zip(area_list,cash_flow_list):
-    DPB.append(discounted_payback_period(csp_discount_rate, y).round(2))
+    DPB.append(cspe.discounted_payback_period(csp_discount_rate, y).round(2))
     #title(z)
     #show()
 dpb_table = pd.DataFrame(DPB, index=area_list, columns = ['DPB (years)'])
@@ -119,20 +121,20 @@ trough_opt = di_sst(Ib,costhetai_NS(),IAM_tro(hoy),Tr, Wc, Wr, Ws, L, N_opt_NS)
 combiNS = tower_opt + trough_opt
 combiNS_xyz = np.vstack(combiNS).reshape((365,24)) # reshape 8760,1 to 365,24
 title('Tower + Trough N-S')
-heatmap2d(combiNS_xyz.T)
+cspm.heatmap2d(combiNS_xyz.T)
 
 area_combiNS = Ac(Wc, L, N_opt_NS)
 PcombiNS = np.amax(combiNS) # used in CSPecon .round(2)
 EcombiNS = integrate.trapz(combiNS).round(2) # used in CSPecon
 
 capital_combiNS = (A_helio_optNS+area_combiNS)*csp_area_costs + PcombiNS*power_block_cost
-revenue_combiNS = cashflow(EcombiNS,csp_energy_price,Eoil,0.4,-oil_price,capital_combiNS)
+revenue_combiNS = cspe.cashflow(EcombiNS,csp_energy_price,Eoil,0.4,-oil_price,capital_combiNS)
 cash_flow_combiNS = [-capital_combiNS] + [revenue_combiNS for i in range(30)]
-dpb_combiNS = discounted_payback_period(csp_discount_rate, cash_flow_combiNS)
+dpb_combiNS = cspe.discounted_payback_period(csp_discount_rate, cash_flow_combiNS)
 npv_combiNS = npf.npv(csp_discount_rate, [-capital_combiNS] 
-+ [cashflow(EcombiNS,csp_energy_price,Eoil,0.4,-oil_price,capital_combiNS) for i in range(30)])
++ [cspe.cashflow(EcombiNS,csp_energy_price,Eoil,0.4,-oil_price,capital_combiNS) for i in range(30)])
 irr_combiNS = npf.irr([-capital_csp] 
-+ [cashflow(EcombiNS,csp_energy_price,Eoil,0.4,-oil_price,capital_combiNS) for i in range(30)])
++ [cspe.cashflow(EcombiNS,csp_energy_price,Eoil,0.4,-oil_price,capital_combiNS) for i in range(30)])
 
 
 
@@ -144,20 +146,20 @@ troughew = di_sst(Ib,costhetai_EW(),IAM_tro(hoy),Tr, Wc, Wr, Ws, L, N_opt_EW)
 combiEW = tower + troughew
 combiEW_xyz = np.vstack(combiEW).reshape((365,24)) # reshape 8760,1 to 365,24
 title('Tower + Trough E-W')
-heatmap2d(combiEW_xyz.T)
+cspm.heatmap2d(combiEW_xyz.T)
 
 area_combiEW = Ac(Wc, L, N_opt_EW)
 PcombiEW = np.amax(combiEW) # used in CSPecon .round(2)
 EcombiEW = integrate.trapz(combiEW).round(2) # used in CSPecon
 
 capital_combiEW = (A_helio_optEW+area_combiEW)*csp_area_costs + PcombiEW*power_block_cost
-revenue_combiEW = cashflow(EcombiEW,csp_energy_price,Eoil,0.4,-oil_price,capital_combiEW)
+revenue_combiEW = cspe.cashflow(EcombiEW,csp_energy_price,Eoil,0.4,-oil_price,capital_combiEW)
 cash_flow_combiEW = [-capital_combiEW] + [revenue_combiEW for i in range(30)]
-dpb_combiEW = discounted_payback_period(csp_discount_rate, cash_flow_combiEW)
+dpb_combiEW = cspe.discounted_payback_period(csp_discount_rate, cash_flow_combiEW)
 npv_combiEW = npf.npv(csp_discount_rate, [-capital_combiEW] 
-+ [cashflow(EcombiEW,csp_energy_price,Eoil,0.4,-oil_price,capital_combiEW) for i in range(30)])
++ [cspe.cashflow(EcombiEW,csp_energy_price,Eoil,0.4,-oil_price,capital_combiEW) for i in range(30)])
 irr_combiEW = npf.irr([-capital_csp] 
-+ [cashflow(EcombiEW,csp_energy_price,Eoil,0.4,-oil_price,capital_combiEW) for i in range(30)])
++ [cspe.cashflow(EcombiEW,csp_energy_price,Eoil,0.4,-oil_price,capital_combiEW) for i in range(30)])
 
 combi_finance = pd.DataFrame((dpb_combiNS,dpb_combiEW,npv_combiNS,npv_combiEW,irr_combiNS,irr_combiEW)).round(2)
 

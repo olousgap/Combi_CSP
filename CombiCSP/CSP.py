@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # from pylab import *
 
 # from SolarGeometry_hoy import *
-import CombiCSP.SolarGeometry_hoy as sgh
+import CombiCSP.SolarGeometry as sgh
 #from pcm import *
 #import pcm
 from iapws import IAPWS97
@@ -459,7 +459,12 @@ def CSCP(Tfi, hoy:np.array= sgh.HOYS_DEFAULT, fname:str="example_data/tmy_35.015
     Heat Mass Transfer 50, 711–719. https://doi.org/10.1007/s00231-013-1282-0
     '''
     
-    pvgis = pd.read_csv(fname, header=16, nrows=8776-16, parse_dates=['time(UTC)'], engine='python')
+    try:
+        pvgis = pd.read_csv(fname, header=16, nrows=8776-16, parse_dates=['time(UTC)'], engine='python')
+    except:
+        #TODO this is an exception until T = CSCP(Tr) is removed from this file (use tests)
+        pvgis = pd.read_csv("examples/"+fname, header=16, nrows=8776-16, parse_dates=['time(UTC)'], engine='python')
+
     Ib = pvgis.loc[:,'Gb(n)']
     #S = 550 # incident solar radiation [W/m2]
     #UL = 4.50 # heat losses total thermal transmittance factor [W/m2Κ]
@@ -653,7 +658,6 @@ def pcm_temp():
     H.J. Mosleh, R. Ahmadi, Linear parabolic trough solar power plant assisted with latent thermal energy storage system: 
     A dynamic simulation, Applied Thermal Engineering. 161 (2019) 114204. https://doi.org/10.1016/j.applthermaleng.2019.114204.
     '''
-
     Tin = Tr
     Nc = hp * Ap / mpcm * cpcm
     T2 = Tmelt + (T - Tmelt) * np.exp(-Nc)

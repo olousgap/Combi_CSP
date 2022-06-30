@@ -9,8 +9,9 @@ from scipy.interpolate import make_interp_spline, BSpline
 
 
 # from SolarGeometry_hoy import *
-import CombiCSP.SolarGeometry_hoy as sgh
+import CombiCSP.SolarGeometry as sgh
 from CombiCSP.CSP import *
+import CombiCSP.misc
 # from Demand_supply import *
 #%%
 hoy = sgh.HOYS_DEFAULT
@@ -87,40 +88,18 @@ plt.title('Trough')
 #np.savetxt('dataxyz.txt',datah.T ,delimiter=',') #save tro_xyz data
 plt.show()
 
-def heatmap2d(arr: np.ndarray):
-    plt.imshow(arr, cmap='hot', interpolation='gaussian')
-    plt.xlabel('Day')
-    plt.ylabel('Hour')
-    #plt.savefig('maps.png') # <<<<<<<<<<<check operation
-    ax = plt.gca()
-    divider = make_axes_locatable(ax)
-    cax = divider.append_axes("right", size="5%", pad=0.05)
-    plt.colorbar(cax=cax)
-    plt.ylabel('MW')#W/m${^2}$
-    plt.show()
+
 
 plt.title('Tower')
-heatmap2d(tow_xyz.T)
+CombiCSP.misc.heatmap2d(tow_xyz.T)
 plt.title('Trough N-S')
-heatmap2d(tro_xyz.T)
+CombiCSP.misc.heatmap2d(tro_xyz.T)
 plt.title('Trough E-W')
-heatmap2d(tro_xyzew.T)
+CombiCSP.misc.heatmap2d(tro_xyzew.T)
 
 
 # %%
-import seaborn as sns
-def heatmap_sns(data, title:str= '', figsize:tuple=(15,8)):
-    ''' This function allows larger displays for the heatmap compared to the imshow.
 
-    As a drawback it depends of seaborn.
-    '''
-    fig, ax = plt.subplots(1,1, figsize=figsize)
-    ax = sns.heatmap(data,ax =ax,
-                cbar_kws={'label': 'Power [MW]'})
-    ax.set_title ('')
-    ax.set_xlabel ('Day of year')
-    ax.set_ylabel ('Hour')
-    ax.set_title(title)
 
-heatmap_sns(tro_xyz.T, title='Trough E-W')
+CombiCSP.misc.heatmap_sns(tro_xyz.T, title='Trough E-W')
 # %%
