@@ -3,11 +3,12 @@ import pathlib
 import pandas as pd
 import numpy as np
 from scipy import integrate
+
 import CombiCSP.SolarGeometry as sgh
-from CombiCSP.CSP import *
 import CombiCSP.misc as cspm
 import CombiCSP.economics as cspe
-#import CSP
+from CombiCSP.CSP import *
+
 #import pcm
 from CSPecon import *
 
@@ -58,15 +59,18 @@ for A_helio in np.arange(75000,125001,10000): # 100MW np.arange(150000,250001,10
     area_list.append(A_helio)
     cash_flow_list.append(cash_flow_tow)
     tow_scenaria.append((A_helio,Ctow,Ptower,Etower,CF_tow,dpb_tow,npv_csp_tow,irr_csp_tow,cash_flow_tow))
-    plot(hoy, tower, label=A_helio)
-xlabel('Time (hour of year)'), ylabel('Power (MW)'), title('Tower'), legend()
+    plt.plot(hoy, tower, label=A_helio)
+plt.xlabel('Time (hour of year)')
+plt.ylabel('Power (MW)') 
+plt.title('Tower')
+plt.legend()
 #xlim(0,87.60), ylim(0,80)
-show()
+plt.show()
 #%%
 # Trough dimensions
 foc_len = 0.88 # [m] focal length CSPP T.1 in Mosleh19
-Wr=0.07 # tube outer diameter [m]
-Wc=5.76 # collector width [m] 5.76 DISS pp.3 in Zarza04, 3.1 CSPP T.1 in Mosleh19 5-7.5 in SAM
+Wr = 0.07 # tube outer diameter [m]
+Wc = 5.76 # collector width [m] 5.76 DISS pp.3 in Zarza04, 3.1 CSPP T.1 in Mosleh19 5-7.5 in SAM
 Ws = 18 # [m] width between rows 18 INDITEP in pp.6 Fraidenraich13, pp.5 Zarza06
 L = 25 # [m * troughs] 12 * 40 DISS pp.3 in Zarza04 for 70MWe turbine
 
@@ -76,8 +80,8 @@ for N in np.arange(800,1301,100): # 100MW np.arange(1000,2001,100):
     area = Ac(Wc, L, N)
     trough = di_sst(Ib,costhetai_NS(),IAM_tro(hoy),Tr, Wc, Wr, Ws, L, N)
     troughew = di_sst(Ib,costhetai_EW(),IAM_tro(hoy),Tr, Wc, Wr, Ws, L, N)
-    plot(hoy, trough, label=N)#,xlim(100,600)
-    plot(hoy, troughew, label=N)#,xlim(100,600)
+    plt.plot(hoy, trough, label=N)#,xlim(100,600)
+    plt.plot(hoy, troughew, label=N)#,xlim(100,600)
     datah = np.vstack((hoy, trough))
     tro_xyz = np.vstack(trough).reshape((365,24)) # reshape 8760,1 to 365,24
     Ptrough = np.amax(trough) # used in CSPecon .round(2)
@@ -93,18 +97,21 @@ for N in np.arange(800,1301,100): # 100MW np.arange(1000,2001,100):
     revenue_csp_tro = cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro)
     cash_flow_tro = [-capital_csp_tro] + [revenue_csp_tro for i in range(30)]
     dpb_tro = cspe.discounted_payback_period(csp_discount_rate, cash_flow_tro)
-    npv_csp_tro = npf.npv(csp_discount_rate, [-capital_csp_tro] 
-    + [cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro) for i in range(30)])
-    irr_csp_tro = npf.irr([-capital_csp_tro] 
-    + [cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro) for i in range(30)])
+    npv_csp_tro = npf.npv(csp_discount_rate, [-capital_csp_tro] \
+        + [cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro) for i in range(30)])
+    irr_csp_tro = npf.irr([-capital_csp_tro] \
+        + [cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro) for i in range(30)])
     area_list.append(area)
     cash_flow_list.append(cash_flow_tro)
     trough_scenaria.append((Ac(Wc, L, N),Cg_tro(Wc, Wr, L, N),Ptrough,Etrough,CF_tro,dpb_tro,npv_csp_tro,irr_csp_tro,cash_flow_tro))
     troughew_scenaria.append((Ac(Wc, L, N),Cg_tro(Wc, Wr, L, N),Ptroughew,Etroughew,CF_troew,dpb_tro,npv_csp_tro,irr_csp_tro,cash_flow_tro))
-xlabel('Time (hour of year)'), ylabel('Power (MW)'), legend(), title('Trough')
+plt.xlabel('Time (hour of year)')
+plt.ylabel('Power (MW)'), 
+plt.legend()
+plt.title('Trough')
 #xlim(0,87.60), ylim(0,80)
-show()
-
+plt.show()
+#%%
 DPB = []
 for (x,y) in zip(area_list,cash_flow_list):
     DPB.append(cspe.discounted_payback_period(csp_discount_rate, y).round(2))
@@ -120,7 +127,7 @@ tower_opt = solarII(Ib,1,IAM_tow(hoy),A_helio_optNS,Ar)
 trough_opt = di_sst(Ib,costhetai_NS(),IAM_tro(hoy),Tr, Wc, Wr, Ws, L, N_opt_NS)
 combiNS = tower_opt + trough_opt
 combiNS_xyz = np.vstack(combiNS).reshape((365,24)) # reshape 8760,1 to 365,24
-title('Tower + Trough N-S')
+plt.title('Tower + Trough N-S')
 cspm.heatmap2d(combiNS_xyz.T)
 
 area_combiNS = Ac(Wc, L, N_opt_NS)
@@ -145,7 +152,7 @@ tower = solarII(Ib,1,IAM_tow(hoy),A_helio_optEW,Ar)
 troughew = di_sst(Ib,costhetai_EW(),IAM_tro(hoy),Tr, Wc, Wr, Ws, L, N_opt_EW)
 combiEW = tower + troughew
 combiEW_xyz = np.vstack(combiEW).reshape((365,24)) # reshape 8760,1 to 365,24
-title('Tower + Trough E-W')
+plt.title('Tower + Trough E-W')
 cspm.heatmap2d(combiEW_xyz.T)
 
 area_combiEW = Ac(Wc, L, N_opt_EW)

@@ -1,9 +1,10 @@
 #%%
-from pylab import *
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy_financial as npf
 import pandas as pd 
-from CombiCSP.SolarGeometry import *
+# from CombiCSP.SolarGeometry import *
+import CombiCSP.SolarGeometry as sgh
 import CombiCSP.CSP as CSP
 from CSPCret import *
 
@@ -48,8 +49,6 @@ energy_price = pd.DataFrame(energy_price,
 #                 [0.09,0.09,0.08,0.074,0.08,0.074,0.08,0.08,0.074]],
 #     columns = ['CSP','CSP+Storage2h','Biomass 1MW','Biomass 5MW',
 #     'Biogas 1MW','Biogas 5MW','Hydro 3MW','Hydro 15MW','PV6KWroof'], index= ['price', 'discount_rate']).transpose()
-
-
 
 csp_energy_price = energy_price['CSP'].loc[0]
 csp_pcm_energy_price = energy_price['CSP+Storage2h'].loc[0]

@@ -648,7 +648,7 @@ Tr = pcm_melting_point + 10 # [oC] the working fluid temperature in the receiver
 Tmelt = pcm_melting_point
 T2 = pcm_melting_point + 5 #Mahfuz14 pp.5
 #T2 = pcm_temp()
-T = CSCP(Tr)
+# T = CSCP(Tr)
 
 def pcm_temp():
     '''https://stackabuse.com/solving-systems-of-linear-equations-with-pythons-numpy/

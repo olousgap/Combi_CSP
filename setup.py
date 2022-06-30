@@ -8,9 +8,10 @@ requirements = [
     'scipy',
     'ipykernel',
     'pandas',
-    'pvlib_python',
-    'iapws'
+    'pvlib',
+    'iapws',
     'numpy-financial',
+    'seaborn',
 ]
 
 test_requirements = [

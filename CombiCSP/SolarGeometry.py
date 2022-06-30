@@ -28,7 +28,19 @@ mer = -25 # for Greece check to replace with 15 * dt_gmt
 lon = 24 # Crete 35.2401° N, 24.8093° E [east negative, west positive]
 
 #%% ===================================== earth declination angles
-def eda(hoy:np.array=HOYS_DEFAULT, method= 'wiki' ):
+def eda(hoy:np.array=HOYS_DEFAULT, method:str= 'wiki' ):
+    """wrapper function for the different earth declination angles functions
+
+    Useful reading [sunpos.py](https://levelup.gitconnected.com/python-sun-position-for-solar-energy-and-research-7a4ead801777)
+
+    Args:
+        hoy (np.array, optional): _description_. Defaults to HOYS_DEFAULT.
+        method (str, optional): _description_. Defaults to 'wiki'.
+
+    Returns:
+        _type_: _description_
+    """    
+    
     dic = {'wiki':d,
            'Katsaprakakis': d2,
            '-81': d3,
@@ -57,10 +69,10 @@ def d1(hoy:np.array=HOYS_DEFAULT): # earth declination angle [in degrees]
 def d2(hoy:np.array=HOYS_DEFAULT):
     '''pp.6, Appendix C in D.A. Katsaprakakis, Power Plant Synthesis, CRC Press, 2020.
     https://doi.org/10.1201/b22190.'''
-    return 23.45 * sin(rad(360*(hoy+284*24)/365*24))
+    return 23.45 * np.sin(np.radians(360*(hoy+284*24)/365*24))
 
 def d3(hoy:np.array=HOYS_DEFAULT):
-    return 23.45 * sin(rad(360*(hoy-81*24)/365*24))
+    return 23.45 * np.sin(np.radians(360*(hoy-81*24)/365*24))
 
 def d(hoy:np.array=HOYS_DEFAULT): # [in radians] https://en.wikipedia.org/wiki/Sunrise_equation
     '''Calculate ecliptic coordinates (ecliptic longitude and obliquity of the
@@ -69,17 +81,17 @@ def d(hoy:np.array=HOYS_DEFAULT): # [in radians] https://en.wikipedia.org/wiki/S
     dOmega = 2.1429 - 0.0010394594 * hoy
     dMeanLongitude = 4.8950630 + 0.017202791698 * hoy
     dMeanAnomaly = 6.2400600 + 0.0172019699 * hoy
-    dEclipticLongitude = dMeanLongitude + 0.03341607 * sin(dMeanAnomaly) 
-    + 0.00034894 * sin( 2 * dMeanAnomaly) - 0.0001134 - 0.0000203 * sin(dOmega)
+    dEclipticLongitude = dMeanLongitude + 0.03341607 * np.sin(dMeanAnomaly) 
+    + 0.00034894 * np.sin( 2 * dMeanAnomaly) - 0.0001134 - 0.0000203 * sin(dOmega)
     dEclipticObliquity = 0.4090928 - 6.2140e-9 * hoy 
     + 0.0000396 * cos(dOmega)
     '''Calculate celestial coordinates ( right ascension and declination ) in radians
     but without limiting the angle to be less than 2*Pi (i.e., the result may be
     greater than 2*Pi)'''
-    dSin_EclipticLongitude = sin( dEclipticLongitude )
+    dSin_EclipticLongitude = np.sin( dEclipticLongitude )
     dY = cos( dEclipticObliquity ) * dSin_EclipticLongitude
     dX = cos( dEclipticLongitude )
-    dRightAscension = atan2( dY,dX )
+    dRightAscension = np.arctan2( dY,dX )
     if dRightAscension.any() < 0: dRightAscension = dRightAscension + 2*np.pi
     return asin( sin( dEclipticObliquity ) * dSin_EclipticLongitude )
 
@@ -118,11 +130,20 @@ def EoTPVCDROM(hoy): # equation of time [in minutes]
 
 #%% 
 def tsol(hoy:np.array=HOYS_DEFAULT): # solar time [in decimal hours] introduce if function for east/west<<<<<<<<<
-    '''CALCULATION NEGLECTS DAYLIGHT SAVING ON SUMMER
+    """returns solar time 
+
+    CALCULATION NEGLECTS DAYLIGHT SAVING ON SUMMER
     https://www.pveducation.org/pvcdrom/properties-of-sunlight/the-suns-position
     hoy + ((lat-mer)/15 + EoT(hoy))/60 # [60 min/h]
     pp.5, Appendix C in D.A. Katsaprakakis, Power Plant Synthesis, CRC Press, 2020.
-    https://doi.org/10.1201/b22190'''
+    https://doi.org/10.1201/b22190
+
+    Args:
+        hoy (np.array, optional): _description_. Defaults to HOYS_DEFAULT.
+
+    Returns:
+        _type_: _description_
+    """    
     return hoy + (4*(lon-15*dt_gmt) + EoT(hoy))/60 # [60 min/h]
 
 
@@ -156,6 +177,26 @@ def I0(hoy:np.array=HOYS_DEFAULT): # Extra-terrestrial solar irradiance [W/m2]
     return 1373 * (1 + 0.033 * cos(rad(360*(hoy-3*24)/365*24)))
 
 #%% ========================================== air mass
+def air_mass(hoy:np.array=HOYS_DEFAULT, method:str= 'wiki' ):
+    """wrapper function for the different air mass
+    
+    Args:
+        hoy (np.array, optional): _description_. Defaults to HOYS_DEFAULT.
+        method (str, optional): _description_. Defaults to 'wiki'.
+
+    Returns:
+        _type_: _description_
+    """    
+    
+    dic = {'wiki': AM,
+           'Kasten': AM2,
+           'Kasten-Young': AM3,
+           'Schoenberg' : AM4
+           }
+    if  method not in dic.keys():
+        raise(ValueError(f"method can be [{dic.keys()}]"))
+    return dic.get(method,None)(hoy)
+
 def AM(hoy:np.array=HOYS_DEFAULT): # Air mass https://en.wikipedia.org/wiki/Air_mass_(solar_energy)
     AM =  1 / cos(z(hoy))
     return AM
@@ -174,7 +215,7 @@ def AM4(hoy:np.array=HOYS_DEFAULT):
     Re = 6371 # radius of the Earth [in km]
     yatm = 9 # effective height of the atmosphere [in km]
     r = Re / yatm
-    return np.sqrt((r * cos(z(hoy)))**2 + 2 * r + 1) - r * cos(z(hoy))
+    return np.sqrt((r * np.cos(z(hoy)))**2 + 2 * r + 1) - r * cos(z(hoy))
 
 
 #%% ======================== beam irradiance
