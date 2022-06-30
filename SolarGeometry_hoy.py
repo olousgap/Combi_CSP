@@ -2,7 +2,7 @@
 '''Geometry calculations as a function of hourly local time     ALT + SHIFT +0 to unfold levels
                                                                 ALT + 0 to fold levels'''
 import numpy as np
-from pylab import *
+# from pylab import *
 #for ineichen
 import pandas as pd
 import pvlib
@@ -149,7 +149,7 @@ def AM4(hoy:np.array=HOYS_DEFAULT):
     Re = 6371 # radius of the Earth [in km]
     yatm = 9 # effective height of the atmosphere [in km]
     r = Re / yatm
-    return sqrt((r * cos(z(hoy)))**2 + 2 * r + 1) - r * cos(z(hoy))
+    return np.sqrt((r * cos(z(hoy)))**2 + 2 * r + 1) - r * cos(z(hoy))
 
 def Ib(hoy:np.array=HOYS_DEFAULT): # Direct irradiance [in W/m2]
     '''https://www.pveducation.org/pvcdrom/properties-of-sunlight/air-mass
@@ -180,7 +180,7 @@ def Ib2(alt, hoy:np.array=HOYS_DEFAULT):
     return 1353 * ((1-0.14*alt) * np.power(0.7, a) + 0.14 * alt)
 # def Ibs(hoy): #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<adapted by ASHRAE?
 #     '''D.G. Stephenson, Equations for solar heat gain through windows, 
-#     Solar Energy. 9 (1965) 81–86. https://doi.org/10.1016/0038-092X(65)90207-0.
+#     Solar Energy. 9 (1965) 81–86. https://doi.org/10.1016/0038-092X(65)90207-0.blank
 #     C.A. Gueymard, Direct and indirect uncertainties in the prediction of tilted irradiance for solar engineering applications, 
 #     Solar Energy. 83 (2009) 432–444. https://doi.org/10.1016/j.solener.2008.11.004.'''
 #     return None
@@ -241,7 +241,7 @@ def TrVH(Ht,R,alt): #V_H transmittance model [all units in km]
     Optical Spectroscopic Techniques and Instrumentation for Atmospheric and Space Research II, 
     International Society for Optics and Photonics, 1996: pp. 82–93. https://doi.org/10.1117/12.256105.'''
     A = (0.0112 * alt + 0.0822) * np.log(((b + 0.0003 * rw)/0.00455)) # tower focal height [km-1]
-    S = 1 - ((0.00101 * rw + 0.0507) * sqrt(b + 0.0091))
+    S = 1 - ((0.00101 * rw + 0.0507) * np.sqrt(b + 0.0091))
     # necessary because the solar beam is composed of many wavelengths and because absorption 
     #(which is not described by b) also occurs along the path. (In the case of single-wavelength transmission, S is always unity.)
     C = (0.0105 * rw + 0.724) * (b - 0.0037)**S

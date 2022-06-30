@@ -1,18 +1,23 @@
+#%%
+import pathlib
 import pandas as pd
 import numpy as np
 from scipy import integrate
+import SolarGeometry_hoy as sgh
 from CSP import *
 #import CSP
 #import pcm
 from CSPecon import *
 
+hoy = sgh.HOYS_DEFAULT
+#%%
+
 # read data from local file
-pvgis = pd.read_csv("tmy_35.010_26.130_2007_2016.csv", header=16, nrows=8776-16, parse_dates=['time(UTC)'], engine='python') #Atherinolakos
+"tmy_35.010_26.130_2007_2016.csv"#Atherinolakos
+FNAME = pathlib.Path('example_data/tmy_35.015_25.755_2005_2020.csv')
+pvgis = pd.read_csv(FNAME, header=16, nrows=8776-16, parse_dates=['time(UTC)'], engine='python') #Atherinolakos
 Ib = pvgis.loc[:,'Gb(n)']
 #Ib = ineichen().dni
-
-
-
 
 area_list = []
 cash_flow_list = []
@@ -55,6 +60,7 @@ xlabel('Time (hour of year)'), ylabel('Power (MW)'), title('Tower'), legend()
 #xlim(0,87.60), ylim(0,80)
 show()
 
+#%%
 # Trough dimensions
 foc_len = 0.88 # [m] focal length CSPP T.1 in Mosleh19
 Wr=0.07 # tube outer diameter [m]
@@ -154,3 +160,5 @@ irr_combiEW = npf.irr([-capital_csp]
 + [cashflow(EcombiEW,csp_energy_price,Eoil,0.4,-oil_price,capital_combiEW) for i in range(30)])
 
 combi_finance = pd.DataFrame((dpb_combiNS,dpb_combiEW,npv_combiNS,npv_combiEW,irr_combiNS,irr_combiEW)).round(2)
+
+# %%

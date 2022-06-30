@@ -3,24 +3,38 @@
                                                     ALT + 0 to fold levels'''
 import numpy as np
 import pandas as pd 
-from pylab import *
-from SolarGeometry_hoy import *
+import matplotlib.pyplot as plt
+# from pylab import *
+
+# from SolarGeometry_hoy import *
 import SolarGeometry_hoy as sgh
 #from pcm import *
 #import pcm
-from numpy import log as ln
 from iapws import IAPWS97
-
-#import matplotlib.pyplot as plt 
+#%%
+from numpy import log as ln
+NaN = np.nan
+pi = np.pi
 sin = np.sin
 cos = np.cos
 asin = np.arcsin
 acos = np.arccos
+tan = np.tan
 atan = np.arctan
+arctan = np.arctan
 atan2 = np.arctan2
 rad = np.radians
 deg = np.degrees
 
+z= sgh.z
+d= sgh.d
+W= sgh.W
+thetai= sgh.thetai
+azim = sgh.azim
+ele = sgh.ele
+
+
+#%%
 # generator data
 nG = 0.97 # efficiency of generator Mosleh19
 SM = 2.5 # Solar Multiplier
@@ -94,17 +108,18 @@ def IAM_tow(hoy:np.array=sgh.HOYS_DEFAULT)->float :
     # polynomial fit, see file IAM.py for data
     
     Args:
-        hoy (int): hour of year
+        hoy (np.array): hour of year
 
     Returns:
         float : Incidence angle modifier of Tower in rad
     """    
     return 1.66741484e-1 + 1.41517577e-2 * deg(sgh.z(hoy)) - 9.51787164e-5 * deg(sgh.z((hoy)))**2
+    
 def IAM_tow2(hoy:np.array=sgh.HOYS_DEFAULT) ->float : # polynomial fit, see file IAM.py for data
     """Incidence angle modifier of Tower - elevation
 
     Args:
-        hoy (int): hour of year
+        hoy (np.array): hour of year
 
     Returns:
         float : Incidence angle modifier of Tower - elevation in rad
@@ -125,7 +140,7 @@ def IAM_tro(hoy:np.array=sgh.HOYS_DEFAULT):
     # thetai in radians
 
     Args:
-        hoy (int): hour of year
+        hoy (np.array): hour of year
 
     Returns:
         _type_: _description_
@@ -160,7 +175,7 @@ def IAM_tro4(hoy,foc_len,area,L):
     '''eq.1 in H.J. Mosleh, R. Ahmadi, Linear parabolic trough solar power plant assisted with latent thermal energy storage system: 
     A dynamic simulation, Applied Thermal Engineering. 161 (2019) 114204. https://doi.org/10.1016/j.applthermaleng.2019.114204.
     J.A. Duffie, W.A. Beckman, Solar Engineering of Thermal Processes, Wiley, 1991.'''
-    return 1 - foc_len / L *(1 + area**2 / 48 * foc_len**2) * tan(rad(thetai(hoy))) # needs rad despite thetai(hoy) already in rad???
+    return 1 - foc_len / L *(1 + area**2 / 48 * foc_len**2) * np.tan(rad(thetai(hoy))) # needs rad despite thetai(hoy) already in rad???
 
 
 def costhetai(hoy:np.array=sgh.HOYS_DEFAULT): 
@@ -179,7 +194,7 @@ def costhetai(hoy:np.array=sgh.HOYS_DEFAULT):
         _type_: _description_
     """    
 
-    return sqrt(cos(z(hoy))**2+cos(d(hoy))**2 * sin(rad(W(hoy)))**2)
+    return np.sqrt(cos(sgh.z(hoy))**2+np.cos(sgh.d(hoy))**2 * sin(rad(sgh.W(hoy)))**2)
 
 def costhetai_EW(hoy:np.array=sgh.HOYS_DEFAULT):
     """Parabolic trough cosine function in East West orientation
@@ -193,7 +208,7 @@ def costhetai_EW(hoy:np.array=sgh.HOYS_DEFAULT):
     Returns:
         _type_: _description_
     """    
-    return cos(d(hoy)) * (cos(rad(W(hoy)))**2 + tan(d(hoy)**2))**0.5
+    return np.cos(sgh.d(hoy)) * (cos(rad(W(hoy)))**2 + np.tan(sgh.d(hoy)**2))**0.5
 
 def costhetai_NS(hoy:np.array=sgh.HOYS_DEFAULT):
     """Parabolic trough cosine function in North-South orientation
@@ -202,12 +217,12 @@ def costhetai_NS(hoy:np.array=sgh.HOYS_DEFAULT):
     Journal of Solar Energy Engineering 1980, 102, 16–21, doi:10.1115/1.3266115.
 
     Args:
-        hoy (int): hour of year
+        hoy (np.array): hour of year
 
     Returns:
         _type_: _description_
     """    
-    return cos(d(hoy)) * (sin(rad(W(hoy)))**2 + (cos(rad(lat)) * cos(rad(W(hoy))) + tan(d(hoy)) * sin(rad(lat)))**2)**0.5
+    return np.cos(sgh.d(hoy)) * (np.sin(rad(sgh.W(hoy)))**2 + (np.cos(rad(sgh.lat)) * np.cos(rad(sgh.W(hoy))) + np.tan(sgh.d(hoy)) * np.sin(rad(sgh.lat)))**2)**0.5
 
 
 #%% ===========================================================================
@@ -229,7 +244,7 @@ def theta_transversal(hoy:np.array=sgh.HOYS_DEFAULT)->float :
         float: theta  transversal incidence angle
     """    
 
-    return arctan(sin(rad(azim(hoy))) * tan(rad(z(hoy))))
+    return np.arctan(sin(rad(azim(hoy))) * tan(rad(z(hoy))))
 
 def theta_i(hoy:np.array=sgh.HOYS_DEFAULT)->float: 
     """Parabolic Trough longitudinal incidence angle
@@ -242,7 +257,7 @@ def theta_i(hoy:np.array=sgh.HOYS_DEFAULT)->float:
     #TODO  not tested
 
     Args:
-        hoy (int): hour of year 
+        hoy (np.array): hour of year 
 
     Returns:
         float: not tested
@@ -256,9 +271,9 @@ Comparison of Linear Fresnel and Parabolic Trough Collector Power Plants.
 Solar Energy 2012, 86, 1–12, doi:10.1016/j.solener.2011.06.020.'''
 # not tested
 def thetai_transversal(hoy:np.array=sgh.HOYS_DEFAULT): 
-    return arctan(abs(sin(azim(hoy)))/tan(ele(hoy)))
+    return np.arctan(abs(sin(azim(hoy)))/tan(ele(hoy)))
 def thetai_longtitudinal(hoy:np.array=sgh.HOYS_DEFAULT): 
-    return arcsin(cos(azim(hoy))*cos(ele(hoy)))
+    return np.arcsin(cos(azim(hoy))*cos(ele(hoy)))
 
 
 def Ac(Wc:float, L:float, N:int): 
@@ -469,7 +484,7 @@ def pipe_loss():
     '''Price, 2005 in pp.42 in A.M. Patnode, Simulation and Performance Evaluation of Parabolic Trough Solar Power Plants, 
     University of Wisconsin-Madison, 2006. https://minds.wisconsin.edu/handle/1793/7590 (accessed March 9, 2021).
     '''
-    DT = (Tout + Tin)/2 - Ta # [oC]
+    DT = (sgh.Tout + sgh.Tin)/2 - sgh.Ta # [oC]
     # 0.017 * DT - 1.683 * 1e-4 * DT**2 + 6.78 * 1e-7 * DT**3 ref?
     return 0.01693 * DT - 0.0001683 * DT**2 + 6.78 * 1e-7 * DT**3
 
@@ -505,11 +520,11 @@ def nano3_kno3_cp():
     mol = [0,25,40,50,60,75,87,100]
     dh = [3.600,3.382,3.290,3.195,3.100,2.802,2.685,2.300]
     T = [310,275,243,227,230,260,300,337]
-    plot(mol,dh)
-    plot(mol,T)
+    plt.plot(mol,dh)
+    plt.plot(mol,T)
     for T in np.arange(510,770,10):
         nano3_kno3_cp = 53.44 - 2.638 * 10**-2 * T # [T in K, cp in cal/K mol]
-        scatter(T, nano3_kno3_cp)
+        plt.scatter(T, nano3_kno3_cp)
 
 def delta_h(a,b,c,x_a,x_b):
     '''Coscia, K.; Elliott, T.; Mohapatra, S.; Oztekin, A.; Neti, S. 
@@ -552,7 +567,7 @@ def cp_mix():
     for x1 in np.arange(0,1,0.1):
         x2 = 1 - x1
         rmix = x1 * c1 + x2 * c2
-        scatter(x1, rmix)
+        plt.scatter(x1, rmix)
     '''
     M. Liu, W. Saman, F. Bruno, 
     Review on storage materials and thermal performance enhancement techniques for high temperature 
@@ -571,16 +586,16 @@ def cp_mix():
         #1.15 scale to 
         pcm_solid_cpmix1 = x1 * pcm_solid_cp1+ x2 * pcm_solid_cp2
         pcm_liquid_cpmix1 = x1 * pcm_liquid_cp1 + x2 * pcm_liquid_cp2
-        scatter(x1, pcm_solid_cpmix1, c='b')
-        scatter(x1, pcm_liquid_cpmix1, c='g')
+        plt.scatter(x1, pcm_solid_cpmix1, c='b')
+        plt.scatter(x1, pcm_liquid_cpmix1, c='g')
     
     for x1 in np.arange(0,1,0.1):
         x2 = 1 - x1
         #1.15 scale to [D’Aguanno18] experiments
         pcm_solid_cpmix2 = x1 * pcm_solid_cp2*1.15 + x2 * pcm_solid_cp3*1.15 
         pcm_liquid_cpmix2 = x1 * pcm_liquid_cp2*1.15 + x2 * pcm_liquid_cp3*1.15
-        scatter(x1, pcm_solid_cpmix2, c='c')
-        scatter(x1, pcm_liquid_cpmix2, c='r')
+        plt.scatter(x1, pcm_solid_cpmix2, c='c')
+        plt.scatter(x1, pcm_liquid_cpmix2, c='r')
     return
 
 # define materials
@@ -637,7 +652,7 @@ def phase_change(T):
         gamma_fraction = 1
         #Qstor = mpcm*cs*(Tmelt - T) + mpcm*ce*(T - Tmelt) + mpcm*cl*(T - T2)
         Qstor = mpcm*cs*(T - Tmelt) + mpcm*gamma_fraction*pcm_latent_heat + mpcm*cl*(T - Tmelt)
-    #plot(T, gamma_fraction)
+    #plt.plot(T, gamma_fraction)
     return Qstor/1e3 # [kW to MW] gamma_fraction,{'gamma_fraction': gamma_fraction, 'Qstor': Qstor}
 
 # %%

@@ -1,8 +1,24 @@
-# Conda installation
+# installation/setup
+
+## requirements
+
+The packaged depends of the following "standard" libraries:
+- matplotlib
+- scipy
+- pandas
+- ipykernel
+
+Additional libraries are:
+
+- pvlib_python:
+- iapws: (The InternationalAssociation for the Properties of Water and Steam) 
+- numpy-financial:
+
+## Conda installation
 
 The following describes a minimum environment using conda. 
 
-Preferably create a new environment
+(Optional) Preferably create a new environment for the packages
 
 `conda create -n combicsp python=3"
 
@@ -14,10 +30,17 @@ installation requires:
 
 `conda install matplotlib scipy pandas ipykernel`
 
-- pvlib python 
+- pvlib_python:
 
 
 `conda install -c conda-forge pvlib-python`
 
-- iapws (The InternationalAssociation for the Properties of Water and Steam) 
+- iapws: The InternationalAssociation for the Properties of Water and Steam
+
 `conda install -c conda-forge iapws`
+
+
+- numpy-financial 
+
+`conda install -c conda-forge numpy-financial`
+
