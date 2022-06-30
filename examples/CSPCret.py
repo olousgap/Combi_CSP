@@ -9,8 +9,8 @@ from scipy.interpolate import make_interp_spline, BSpline
 
 
 # from SolarGeometry_hoy import *
-import SolarGeometry_hoy as sgh
-from CSP import *
+import CombiCSP.SolarGeometry_hoy as sgh
+from CombiCSP.CSP import *
 # from Demand_supply import *
 #%%
 hoy = sgh.HOYS_DEFAULT

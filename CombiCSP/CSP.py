@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # from pylab import *
 
 # from SolarGeometry_hoy import *
-import SolarGeometry_hoy as sgh
+import CombiCSP.SolarGeometry_hoy as sgh
 #from pcm import *
 #import pcm
 from iapws import IAPWS97
