@@ -51,7 +51,7 @@ def CtoK(c: float|int):
     k = c + 273
     return k
     
-def solarII(Ib,Trans,IAM,A_helio:float,Ar:float)->float:
+def solarII(Ib:pd.Series,Trans:float,IAM:np.array,A_helio:float,Ar:float)->pd.Series:
     """Calculates the power of the solar tower with heliostat
  
     R.K. McGovern, W.J. Smith, Optimal concentration and temperatures of solar thermal power plants,
@@ -62,16 +62,15 @@ def solarII(Ib,Trans,IAM,A_helio:float,Ar:float)->float:
 
 
     Args:
-        Ib (_type_): direct irradiance
-        Trans (_type_): transmissivity 
-        IAM (_type_): incidence angle modifier
+        Ib (pd.Series): direct irradiance
+        Trans (float): transmissivity 
+        IAM (np.array): incidence angle modifier
         A_helio (float): heliostat area in m^2
         Ar (float): receiver area in m^2
 
     Returns:
-        float: power in MW
+        pd.Series: power in MW
     """
-
     Effopt=100 # heliostat optical effiency [%] 65% pp.24 in Pacheco
     #A_helio = 71140 + 10260 # total heliostat area [m2] pp.22 in Pacheco
     R = 1 # reflectivity [%] 1 if IAM is IAM_tow(hoy)
