@@ -4,6 +4,7 @@
 import numpy as np
 import pandas as pd 
 import matplotlib.pyplot as plt
+from scipy import integrate
 # from pylab import *
 
 # from SolarGeometry_hoy import *
@@ -100,6 +101,88 @@ def solarII(Ib:pd.Series,Trans:float,IAM:np.array,A_helio:float,Ar:float)->pd.Se
     else:
         P = Qnet * nR * nG
     return P/1e6 # convert W to MW
+
+
+class OutputContainer():
+    """this is a container for the data and reshaping them. 
+
+    For simplicity reason this assums that the time index will always be hourly the days of the year
+
+    Returns:
+        _type_: _description_
+    """    
+    hoy = sgh.HOYS_DEFAULT
+    def __init__(self, data:pd.Series, A_helio:float, Ctow:float):
+        """_summary_
+
+        Args:
+            data (np.array): time series
+            A_helio (_type_): The heliostats area in m2
+            Ctow (_type_): the ratio of area of heliostat to solar tower receiver 
+        """        
+        if not data.shape == (8760,):
+            raise ValueError("Wrong time series")
+        self.data = data
+        self.A_helio = A_helio
+        self.Ctow = Ctow
+
+    def datah(self):
+        return np.vstack((self.hoy, self.data))
+    
+    def tow_xyz(self):
+        """stacks the data in days and hours 
+
+        Returns:
+            _type_: _description_
+        """        
+        return np.vstack(self.data).reshape((365,24))
+    
+    def Ptower(self)->float:
+        """returns the maximum power of the Tower
+
+        Returns:
+            _type_: _description_
+        """        
+        return np.amax(self.data) 
+
+    def Etower(self)->float:
+        """retunrs the total energy yield of the solar tower. 
+
+        Returns:
+           float : the total power per year in [MWh]
+        """        
+        return integrate.trapz(self.data).round(2)
+
+    def CF_tow(self)->float: 
+        return self.Etower() / (8760 * self.Ptower())
+    
+    def as_df(self)->float: 
+        return pd.DataFrame({'Power_MW':self.data}, index= self.hoy)
+
+    def summary_tower_data(self):    
+        tow_data = np.vstack((self.A_helio,self.Ctow,self.Ptower(),self.Etower(),self.CF_tow())) # vertical stack
+        return tow_data
+
+
+class SolarTowerCalcs():
+    def __init__(self, 
+        alt = 200*10e-3 
+        , Ht = 0.1
+        , Ar = 99.3 
+        , A_helio = 225000
+        ):
+        self.Ar_m2 = Ar# receiver area [m2] pp.44 in Pacheco
+        self.alt_m = alt #Height above sea level [m]
+        self.Ht_km = Ht # Tower height [km]
+        self.A_helio_m2 = A_helio # SolarII 82,750 m² for 10MW https://en.wikipedia.org/wiki/The_Solar_Project
+        self.Ctow = self.A_helio_m2 / self.Ar_m2
+
+    def perform_calc(self, Ib, transmittance=1, hoy=sgh.HOYS_DEFAULT):
+        self._hourly_results = OutputContainer(data = solarII(Ib=Ib,Trans=transmittance, IAM=IAM_tow(hoy),
+                A_helio=self.A_helio_m2,Ar=self.Ar_m2),
+            A_helio=self.A_helio_m2, Ctow=self.Ctow)
+        return self._hourly_results
+
 
 #%% Incidence angle methods
 
