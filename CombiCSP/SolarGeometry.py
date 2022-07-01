@@ -8,15 +8,6 @@ import pandas as pd
 import pvlib
 from pvlib import clearsky, atmosphere, solarposition
 
-sin = np.sin
-cos = np.cos
-asin = np.arcsin
-acos = np.arccos
-atan = np.arctan
-atan2 = np.arctan2
-deg = np.degrees
-rad = np.radians
-
 # args = hoy = np.arange(1, 8761, 1) # hour of year
 HOYS_DEFAULT = np.arange(1, 8761, 1) # hours of year
 
@@ -311,7 +302,7 @@ def z(hoy:np.array=HOYS_DEFAULT)->np.array:
         np.array: solar zenith angle in radians
     """    
     # solar zenith angle [in radians] https://en.wikipedia.org/wiki/Solar_zenith_angle
-    return acos(np.cos(np.radians(lat)) * np.cos(d(hoy)) * np.cos(np.radians(W(hoy))) \
+    return np.arccos(np.cos(np.radians(lat)) * np.cos(d(hoy)) * np.cos(np.radians(W(hoy))) \
         + np.sin(np.radians(lat)) * np.sin(d(hoy)))
 
 def azim(hoy:np.array=HOYS_DEFAULT)->np.array: 
@@ -329,8 +320,8 @@ def azim(hoy:np.array=HOYS_DEFAULT)->np.array:
 def thetai(hoy:np.array=HOYS_DEFAULT): # incidence angle [in radians]
     inclination=90
     azimuths=0
-    g = deg(azim(hoy)) - azimuths # if surface looks due S then azimuths=0
-    return acos(np.cos(ele(hoy)) * np.sin(np.radians(inclination)) * np.cos(np.radians(g)) 
+    g = np.degrees(azim(hoy)) - azimuths # if surface looks due S then azimuths=0
+    return np.arccos(np.cos(ele(hoy)) * np.sin(np.radians(inclination)) * np.cos(np.radians(g)) 
         + np.sin(ele(hoy)) * np.cos(np.radians(inclination)))
 
 def I0(hoy:np.array=HOYS_DEFAULT)->np.array: # Extra-terrestrial solar irradiance [W/m2]
