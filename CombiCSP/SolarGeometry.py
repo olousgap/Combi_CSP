@@ -112,19 +112,36 @@ class SolarSystemLocation:
         return np.arcsin(np.cos(np.radians(self.lat)) * np.cos(d(hoy)) * np.cos(np.radians(self.W(hoy))) \
             + np.sin(np.radians(self.lat)) * np.sin(d(hoy)))
 
-    def z(self, hoy:np.array=HOYS_DEFAULT): # solar zenith angle [in radians] https://en.wikipedia.org/wiki/Solar_zenith_angle
+    def z(self, hoy:np.array=HOYS_DEFAULT):
+        """Returns the solar zenith angle in radians
+
+        solar zenith angle [in radians] https://en.wikipedia.org/wiki/Solar_zenith_angle   
+        Args:
+            hoy (np.array, optional): hour of year. Defaults to HOYS_DEFAULT.
+
+        Returns:
+        np.array: solar zenith angle in radians"""
+
         return np.arccos(np.cos(np.radians(self.lat)) * np.cos(d(hoy)) * np.cos(np.radians(self.W(hoy))) 
         + np.sin(np.radians(self.lat)) * np.sin(d(hoy)))
 
-    def azim(self, hoy:np.array=HOYS_DEFAULT): # solar azimuth [in radians]
+    def azim(self, hoy:np.array=HOYS_DEFAULT)->np.array: 
+        """Returns the solar azimuth angle in radians
+
+        Args:
+            hoy (np.array, optional): hour of year. Defaults to HOYS_DEFAULT.
+
+        Returns:
+            np.array: solar azimuth angle in radians
+        """   
         return np.arcsin(np.cos(d(hoy)) * np.sin(np.radians(self.W(hoy))) / np.cos(self.ele(hoy)))
 
-    def thetai(hoy:np.array=HOYS_DEFAULT): # incidence angle [in radians]
-        inclination=90
-        azimuths=0
-        g = deg(azim(hoy)) - azimuths # if surface looks due S then azimuths=0
-        return acos(cos(ele(hoy)) * sin(rad(inclination)) * cos(rad(g)) 
-            + sin(ele(hoy)) * cos(rad(inclination)))
+# #TODO: consider creating a system/Unit parameters
+#  def thetai(hoy:np.array=HOYS_DEFAULT, inclination=90, azimuths=0): # incidence angle [in radians]
+#
+#     g = deg(azim(hoy)) - azimuths # if surface looks due S then azimuths=0
+#     return np.arccos(np.cos(ele(hoy)) * np.sin(np.radians(inclination)) * np.cos(np.radians(g)) 
+#         + np.sin(ele(hoy)) * np.cos(np.radians(inclination)))
 
 # ssCrete = SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
 
@@ -133,6 +150,7 @@ def get_pvgis_tmy_data(sysloc:SolarSystemLocation)->pd.DataFrame:
     """function that collects data from online. 
 
     #TODO this should be a class containing tmy data which can either be retrieved from a file on disk or PVGIS database
+    
 
     Args:
         sysloc (_type_): _description_
@@ -208,25 +226,25 @@ def d(hoy:np.array=HOYS_DEFAULT): # [in radians] https://en.wikipedia.org/wiki/S
     dMeanLongitude = 4.8950630 + 0.017202791698 * hoy
     dMeanAnomaly = 6.2400600 + 0.0172019699 * hoy
     dEclipticLongitude = dMeanLongitude + 0.03341607 * np.sin(dMeanAnomaly) 
-    + 0.00034894 * np.sin( 2 * dMeanAnomaly) - 0.0001134 - 0.0000203 * sin(dOmega)
+    + 0.00034894 * np.sin( 2 * dMeanAnomaly) - 0.0001134 - 0.0000203 * np.sin(dOmega)
     dEclipticObliquity = 0.4090928 - 6.2140e-9 * hoy 
-    + 0.0000396 * cos(dOmega)
+    + 0.0000396 * np.cos(dOmega)
     '''Calculate celestial coordinates ( right ascension and declination ) in radians
     but without limiting the angle to be less than 2*Pi (i.e., the result may be
     greater than 2*Pi)'''
     dSin_EclipticLongitude = np.sin( dEclipticLongitude )
-    dY = cos( dEclipticObliquity ) * dSin_EclipticLongitude
-    dX = cos( dEclipticLongitude )
+    dY = np.cos( dEclipticObliquity ) * dSin_EclipticLongitude
+    dX = np.cos( dEclipticLongitude )
     dRightAscension = np.arctan2( dY,dX )
     if dRightAscension.any() < 0: dRightAscension = dRightAscension + 2*np.pi
-    return asin( sin( dEclipticObliquity ) * dSin_EclipticLongitude )
+    return np.arcsin( np.sin( dEclipticObliquity ) * dSin_EclipticLongitude )
 
 #%% Equations of time
 
 def EoT(hoy:np.array=HOYS_DEFAULT): # equation of time [in minutes]
     gamma = 360*(hoy-1)/365
-    return 2.2918*(0.0075+0.1868*cos(rad(gamma))-3.2077*sin(rad(gamma)) \
-        -1.4615*cos(rad(2*gamma))-4.089*sin(rad(2*gamma)))
+    return 2.2918*(0.0075+0.1868*np.cos(np.radians(gamma))-3.2077*np.sin(np.radians(gamma)) \
+        -1.4615*np.cos(np.radians(2*gamma))-4.089*np.sin(np.radians(2*gamma)))
 
 # TODO this do not work due to dayofyear --- uncomment when this is clear.
 # def _calculate_simple_day_angle(dayofyear, offset=1):
@@ -280,23 +298,40 @@ def W(hoy:np.array=HOYS_DEFAULT): # solar hour angle [in degrees]
     return 15 * (tsol(hoy) - 12) # 360deg/24h = 15deg/h
 
 def ele(hoy:np.array=HOYS_DEFAULT): # solar elevation angle or solar height [in radians]
-    return asin(cos(rad(lat)) * cos(d(hoy)) * cos(rad(W(hoy)))
-    + sin(rad(lat)) * sin(d(hoy)))
+    return np.arcsin(np.cos(np.radians(lat)) * np.cos(d(hoy)) * np.cos(np.radians(W(hoy)))
+    + np.sin(np.radians(lat)) * np.sin(d(hoy)))
 
-def z(hoy:np.array=HOYS_DEFAULT): # solar zenith angle [in radians] https://en.wikipedia.org/wiki/Solar_zenith_angle
-    return acos(cos(rad(lat)) * cos(d(hoy)) * cos(rad(W(hoy))) 
-    + sin(rad(lat)) * sin(d(hoy)))
+def z(hoy:np.array=HOYS_DEFAULT)->np.array:
+    """Returns the solar zenith angle in radians
 
-def azim(hoy:np.array=HOYS_DEFAULT): # solar azimuth [in radians]
-    return asin(cos(d(hoy)) * sin(rad(W(hoy))) / cos(ele(hoy)))
+    Args:
+        hoy (np.array, optional): hour of year. Defaults to HOYS_DEFAULT.
+
+    Returns:
+        np.array: solar zenith angle in radians
+    """    
+    # solar zenith angle [in radians] https://en.wikipedia.org/wiki/Solar_zenith_angle
+    return acos(np.cos(np.radians(lat)) * np.cos(d(hoy)) * np.cos(np.radians(W(hoy))) \
+        + np.sin(np.radians(lat)) * np.sin(d(hoy)))
+
+def azim(hoy:np.array=HOYS_DEFAULT)->np.array: 
+    """Returns the solar azimuth angle in radians
+
+    Args:
+        hoy (np.array, optional): hour of year. Defaults to HOYS_DEFAULT.
+
+    Returns:
+        np.array: solar azimuth angle in radians
+    """   
+    return np.arcsin(np.cos(d(hoy)) * np.sin(np.radians(W(hoy))) / np.cos(ele(hoy)))
 
 #%%
 def thetai(hoy:np.array=HOYS_DEFAULT): # incidence angle [in radians]
     inclination=90
     azimuths=0
     g = deg(azim(hoy)) - azimuths # if surface looks due S then azimuths=0
-    return acos(cos(ele(hoy)) * sin(rad(inclination)) * cos(rad(g)) 
-        + sin(ele(hoy)) * cos(rad(inclination)))
+    return acos(np.cos(ele(hoy)) * np.sin(np.radians(inclination)) * np.cos(np.radians(g)) 
+        + np.sin(ele(hoy)) * np.cos(np.radians(inclination)))
 
 def I0(hoy:np.array=HOYS_DEFAULT)->np.array: # Extra-terrestrial solar irradiance [W/m2]
     '''Appendix C in D.A. Katsaprakakis, Power Plant Synthesis, CRC Press, 2020.
@@ -325,16 +360,16 @@ def air_mass(hoy:np.array=HOYS_DEFAULT, method:str= 'wiki' ):
     return dic.get(method,None)(hoy)
 
 def AM(hoy:np.array=HOYS_DEFAULT): # Air mass https://en.wikipedia.org/wiki/Air_mass_(solar_energy)
-    AM =  1 / cos(z(hoy))
+    AM =  1 / np.cos(z(hoy))
     return AM
 def AM2(hoy:np.array=HOYS_DEFAULT):
     '''F. Kasten, A new table and approximation formula for the relative optical air mass, 
     Arch. Met. Geoph. Biokl. B. 14 (1965) 206–223. https://doi.org/10.1007/BF02248840.'''
-    return 1 / (cos(z(hoy)) + 0.6556 * (6.379 - z(hoy))**-1.757)
+    return 1 / (np.cos(z(hoy)) + 0.6556 * (6.379 - z(hoy))**-1.757)
 def AM3(hoy:np.array=HOYS_DEFAULT):
     '''F. Kasten, A.T. Young, Revised optical air mass tables and approximation formula, 
     Appl. Opt., AO. 28 (1989) 4735–4738. https://doi.org/10.1364/AO.28.004735.'''
-    return 1 / (cos(z(hoy)) + 0.50572 * (6.07995 - z(hoy))**-1.6364)
+    return 1 / (np.cos(z(hoy)) + 0.50572 * (6.07995 - z(hoy))**-1.6364)
 def AM4(hoy:np.array=HOYS_DEFAULT):
     '''E. Schoenberg, Theoretische Photometrie, in: K.F. Bottlinger, A. Brill, E. Schoenberg, 
     H. Rosenberg (Eds.), Grundlagen der Astrophysik, Springer, Berlin, Heidelberg, 1929: pp. 1–280. 
@@ -342,7 +377,7 @@ def AM4(hoy:np.array=HOYS_DEFAULT):
     Re = 6371 # radius of the Earth [in km]
     yatm = 9 # effective height of the atmosphere [in km]
     r = Re / yatm
-    return np.sqrt((r * np.cos(z(hoy)))**2 + 2 * r + 1) - r * cos(z(hoy))
+    return np.sqrt((r * np.cos(z(hoy)))**2 + 2 * r + 1) - r * np.cos(z(hoy))
 
 
 #%% ======================== beam irradiance
@@ -371,7 +406,7 @@ def Ib2(alt, hoy:np.array=HOYS_DEFAULT):
     Returns:
         _type_: _description_
     """    
-    a = np.power(abs(AM(hoy)), 0.678)
+    a = np.power(np.abs(AM(hoy)), 0.678)
     return 1353 * ((1-0.14*alt) * np.power(0.7, a) + 0.14 * alt)
 
 # def Ibs(hoy): #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<adapted by ASHRAE?
@@ -381,78 +416,6 @@ def Ib2(alt, hoy:np.array=HOYS_DEFAULT):
 #     Solar Energy. 83 (2009) 432–444. https://doi.org/10.1016/j.solener.2008.11.004.'''
 #     return None
 
-#%%  ================================================= Transmittance
-# the following functions relate to the [heliostats](https://www.nrel.gov/csp/heliocon.html) 
-def Tr23km(alt, hoy:np.array=HOYS_DEFAULT): # Transmittance % Mid latitudes winter
-
-    '''H.C. Hottel, A simple model for estimating the transmittance of direct solar radiation through clear atmospheres, 
-    Solar Energy. 18 (1976) 129–134.'''
-    a0 = 1.03 * (0.4327 - 0.00821 * (6 - alt)**2) #0.1283
-    a1 = 1.01 * (0.5055 + 0.00595 * (6.5 - alt)**2) #0.7559
-    k = 1.00 * (0.2711 + 0.01858 * (2.5 - alt)**2) #-0.3878
-    return a0 + a1 * np.exp(-k)/np.exp(cos(rad(z(hoy)))) # needs rad despite z(hoy) already in rad???
-
-def Tr5km(alt, hoy:np.array=HOYS_DEFAULT): # Transmittance % Mid latitudes winter
-    '''H.C. Hottel, A simple model for estimating the transmittance of direct solar radiation through clear atmospheres, 
-    Solar Energy. 18 (1976) 129–134.'''
-    a0 = 1.04*(0.2538-0.0063*(6-alt)**2)
-    a1 = 1.01*(0.7678+0.0010*(6.5-alt)**2)
-    k = 1.00*(0.2490+0.0810*(2.5-alt)**2)
-    return a0 + a1 * np.exp(-k)/np.exp(cos(rad(z(hoy)))) # needs rad despite z(hoy) already in rad???
-
-def TrD23km(R): 
-    """transmmitance at 23km 
-
-    Args:
-        R (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """    
-    return 0.6739+10.46*R-1.7*R**2+0.2845*R**3
-
-def TrD5km(R): 
-    """transmmitance at 23km 
-
-    Args:
-        R (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """    
-    return 1.293+27.48*R-3.394*R**2+0*R**3
-
-def TrV23km(R): 
-    return 0.99326-0.1046*R+0.017*R**2-0.002845*R**3
-
-def TrV5km(R): 
-    """_summary_
-
-    Args:
-        R (_type_):  slant range in [km]
-
-    Returns:
-        _type_: _description_
-    """    
-    return 0.98707-0.2748*R+0.03394*R**2-0*R**3
-
-
-def TrVH(Ht,R,alt): #V_H transmittance model [all units in km]
-    '''C.L. Pitman, L.L. Vant-Hull, Atmospheric transmittance model for a solar beam propagating between a heliostat and a receiver, 
-    Sandia National Labs., Albuquerque, NM (USA); Houston Univ., TX (USA). Energy Lab., 1984. https://doi.org/10.2172/5148541.'''
-    #Ht = 0.100 # Tower height [km]
-    b = 0.17 # attenuation coefficient due to scattering by aerosols and air molecules at 550nm [km-1]
-    rw = 5.9 # water vapor density [g/m3]
-    '''G.P. Anderson, et al , Reviewing atmospheric radiative transfer modeling: 
-    new developments in high- and moderate-resolution FASCODE/FASE and MODTRAN, in: 
-    Optical Spectroscopic Techniques and Instrumentation for Atmospheric and Space Research II, 
-    International Society for Optics and Photonics, 1996: pp. 82–93. https://doi.org/10.1117/12.256105.'''
-    A = (0.0112 * alt + 0.0822) * np.log(((b + 0.0003 * rw)/0.00455)) # tower focal height [km-1]
-    S = 1 - ((0.00101 * rw + 0.0507) * np.sqrt(b + 0.0091))
-    # necessary because the solar beam is composed of many wavelengths and because absorption 
-    #(which is not described by b) also occurs along the path. (In the case of single-wavelength transmission, S is always unity.)
-    C = (0.0105 * rw + 0.724) * (b - 0.0037)**S
-    ks = C * np.exp(-A * Ht) # broadband extinction coefficient between tower and receiver atop [km-S]
-    return np.exp(-ks * R**S) # R slant range in [km]
+# 
 
 # %%

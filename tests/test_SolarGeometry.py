@@ -13,6 +13,26 @@ def Crete():
     """    
     return sgh.SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
 
+@pytest.fixture
+def R():
+    """R for transmittance functions 
+    units are unknown. For verifications see : 
+    H.C. Hottel, A simple model for estimating the transmittance of direct solar radiation through clear atmospheres, 
+    Solar Energy. 18 (1976) 129–134."
+    """
+    return 1
+
+@pytest.fixture
+def alt():
+    """
+    """    
+    return sgh.SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
+@pytest.fixture
+def Ht():
+    """
+    """    
+    return sgh.SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
+
 class Test_da:
     def test_d1(self, hoy_ex1):
         assert sgh.d1(hoy_ex1)[0] == pytest.approx(-13.37218176, abs=1e-3)
@@ -93,3 +113,4 @@ class Test_EOT_zen_ele:
         expected =  -0.577725020643127
         assert sgh.azim(hoy_ex1)[0] == pytest.approx( expected, abs=1e-3)
         assert Crete.azim(hoy_ex1)[0] == pytest.approx( expected, abs=1e-3)
+
