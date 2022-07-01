@@ -106,6 +106,8 @@ def solarII(Ib,Trans,IAM,A_helio:float,Ar:float)->float:
 
 def IAM_tow(hoy:np.array=sgh.HOYS_DEFAULT)->float : 
     """Incidence angle modifier of Tower (azimuth)
+
+    for explanation see: http://www.solarpanelsplus.com/solar-tracking/
     
     # polynomial fit, see file IAM.py for data
     

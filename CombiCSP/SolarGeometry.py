@@ -27,6 +27,132 @@ lat = 35 # Crete
 mer = -25 # for Greece check to replace with 15 * dt_gmt
 lon = 24 # Crete 35.2401° N, 24.8093° E [east negative, west positive]
 
+class SolarSystemLocation:
+    def __init__(self, lat:float,  lon:float, mer:float,dt_gmt:float, alt:float=0):
+        """_summary_
+
+        Args:
+            lat (float): longitude of system 
+            lon (float): longitude of system
+            mer (float):  for Greece check to replace with 15 * dt_gmt (TODO better description)
+            dt_gmt (float): time difference between Greenwich Mean Time
+            alt (float): altitude of system (in m) (default: 0  - sea level)
+        """        
+        self.dt_gmt = dt_gmt # 
+        self.lat = lat # Crete
+        self.mer = mer # 
+        self.lon = lon # Crete 35.2401° N, 24.8093° E [east negative, west positive
+
+    #%% ========================================== air mass
+    def air_mass(self, hoy:np.array=HOYS_DEFAULT, method:str= 'wiki' ):
+        """wrapper function for the different air mass
+        
+        Args:
+            hoy (np.array, optional): _description_. Defaults to HOYS_DEFAULT.
+            method (str, optional): _description_. Defaults to 'wiki'.
+
+        Returns:
+            _type_: _description_
+        """    
+        
+        dic = {'wiki': self._AM_wiki,
+            'Kasten': self._AM_Kasten,
+            'Kasten-Young': self._AM3_KastenYoung,
+            'Schoenberg' : self._AM_Shoenberg
+            }
+        if  method not in dic.keys():
+            raise(ValueError(f"method can be [{dic.keys()}]"))
+        return dic.get(method,None)(hoy)
+
+    def _AM_wiki(self, hoy:np.array=HOYS_DEFAULT): # Air mass https://en.wikipedia.org/wiki/Air_mass_(solar_energy)
+        AM =  1 / np.cos(self.z(hoy))
+        return AM
+    def _AM_Kasten(self, hoy:np.array=HOYS_DEFAULT):
+        '''F. Kasten, A new table and approximation formula for the relative optical air mass, 
+        Arch. Met. Geoph. Biokl. B. 14 (1965) 206–223. https://doi.org/10.1007/BF02248840.'''
+        return 1 / (np.cos(self.z(hoy)) + 0.6556 * (6.379 - self.z(hoy))**-1.757)
+    def _AM3_KastenYoung(self, hoy:np.array=HOYS_DEFAULT):
+        '''F. Kasten, A.T. Young, Revised optical air mass tables and approximation formula, 
+        Appl. Opt., AO. 28 (1989) 4735–4738. https://doi.org/10.1364/AO.28.004735.'''
+        return 1 / (np.cos(self.z(hoy)) + 0.50572 * (6.07995 - self.z(hoy))**-1.6364)
+    def _AM_Shoenberg(self, hoy:np.array=HOYS_DEFAULT):
+        '''E. Schoenberg, Theoretische Photometrie, in: K.F. Bottlinger, A. Brill, E. Schoenberg, 
+        H. Rosenberg (Eds.), Grundlagen der Astrophysik, Springer, Berlin, Heidelberg, 1929: pp. 1–280. 
+        https://doi.org/10.1007/978-3-642-90703-6_1.'''
+        Re = 6371 # radius of the Earth [in km]
+        yatm = 9 # effective height of the atmosphere [in km]
+        r = Re / yatm
+        return np.sqrt((r * np.cos(self.z(hoy)))**2 + 2 * r + 1) - r * np.cos(self.z(hoy))
+
+    def tsol(self, hoy:np.array=HOYS_DEFAULT): # solar time [in decimal hours] introduce if function for east/west<<<<<<<<<
+        """returns solar time 
+
+        CALCULATION NEGLECTS DAYLIGHT SAVING ON SUMMER
+        https://www.pveducation.org/pvcdrom/properties-of-sunlight/the-suns-position
+        hoy + ((lat-mer)/15 + EoT(hoy))/60 # [60 min/h]
+        pp.5, Appendix C in D.A. Katsaprakakis, Power Plant Synthesis, CRC Press, 2020.
+        https://doi.org/10.1201/b22190
+
+        Args:
+            hoy (np.array, optional): _description_. Defaults to HOYS_DEFAULT.
+
+        Returns:
+            _type_: _description_
+        """    
+        return hoy + (4*(self.lon-15*self.dt_gmt) + EoT(hoy))/60 # [60 min/h]
+
+
+    def W(self, hoy:np.array=HOYS_DEFAULT): # solar hour angle [in degrees]
+        #TODO rename to Omega
+        '''given than for tsol = 12h it should be ω = 0ο and for the solar time range
+        tsol = 0 – 24h the solar hour angle ranges from 0o to ±180'''
+        return 15 * (self.tsol(hoy) - 12) # 360deg/24h = 15deg/h
+
+    def ele(self, hoy:np.array=HOYS_DEFAULT): # solar elevation angle or solar height [in radians]
+        return np.arcsin(np.cos(np.radians(self.lat)) * np.cos(d(hoy)) * np.cos(np.radians(self.W(hoy))) \
+            + np.sin(np.radians(self.lat)) * np.sin(d(hoy)))
+
+    def z(self, hoy:np.array=HOYS_DEFAULT): # solar zenith angle [in radians] https://en.wikipedia.org/wiki/Solar_zenith_angle
+        return np.arccos(np.cos(np.radians(self.lat)) * np.cos(d(hoy)) * np.cos(np.radians(self.W(hoy))) 
+        + np.sin(np.radians(self.lat)) * np.sin(d(hoy)))
+
+    def azim(self, hoy:np.array=HOYS_DEFAULT): # solar azimuth [in radians]
+        return np.arcsin(np.cos(d(hoy)) * np.sin(np.radians(self.W(hoy))) / np.cos(self.ele(hoy)))
+
+    def thetai(hoy:np.array=HOYS_DEFAULT): # incidence angle [in radians]
+        inclination=90
+        azimuths=0
+        g = deg(azim(hoy)) - azimuths # if surface looks due S then azimuths=0
+        return acos(cos(ele(hoy)) * sin(rad(inclination)) * cos(rad(g)) 
+            + sin(ele(hoy)) * cos(rad(inclination)))
+
+# ssCrete = SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
+
+
+def get_pvgis_tmy_data(sysloc:SolarSystemLocation)->pd.DataFrame:
+    """function that collects data from online. 
+
+    #TODO this should be a class containing tmy data which can either be retrieved from a file on disk or PVGIS database
+
+    Args:
+        sysloc (_type_): _description_
+
+    Returns:
+        pd.DataFrame: _description_
+    """    
+    latitude = sysloc.lat
+    longitude = sysloc.long
+    OUTPUTFORMAT = 'json'
+
+    dat = pvlib.iotools.get_pvgis_tmy(latitude, longitude, outputformat=OUTPUTFORMAT , usehorizon=True, userhorizon=None, 
+        startyear=None, endyear=None, url='https://re.jrc.ec.europa.eu/api/', map_variables=True, timeout=30)
+
+    df = dat[0]
+    # dat[1] # monts of year for data 
+    # dat[2] # metadata for the data set
+    # dat[3] # variable explanation
+    return df 
+
 #%% ===================================== earth declination angles
 def eda(hoy:np.array=HOYS_DEFAULT, method:str= 'wiki' ):
     """wrapper function for the different earth declination angles functions
@@ -102,31 +228,32 @@ def EoT(hoy:np.array=HOYS_DEFAULT): # equation of time [in minutes]
     return 2.2918*(0.0075+0.1868*cos(rad(gamma))-3.2077*sin(rad(gamma)) \
         -1.4615*cos(rad(2*gamma))-4.089*sin(rad(2*gamma)))
 
-def _calculate_simple_day_angle(dayofyear, offset=1):
-    """simple method for calculating the solar angle
+# TODO this do not work due to dayofyear --- uncomment when this is clear.
+# def _calculate_simple_day_angle(dayofyear, offset=1):
+#     """simple method for calculating the solar angle
 
-    Args:
-        dayofyear (_type_): _description_
-        offset (int, optional): _description_. Defaults to 1.
+#     Args:
+#         dayofyear (_type_): _description_
+#         offset (int, optional): _description_. Defaults to 1.
 
-    Returns:
-        _type_: solar angle  in radians 
-    """    
-    return (2. * np.pi / 365.) * (dayofyear - offset)
+#     Returns:
+#         _type_: solar angle  in radians 
+#     """    
+#     return (2. * np.pi / 365.) * (dayofyear - offset)
 
-def EoTS(hoy): # Equation of time from Duffie & Beckman and attributed to Spencer
-    #(1971) and Iqbal (1983) [in minutes]
-    day_angle = _calculate_simple_day_angle(dayofyear)
-    return (1440.0 / 2 / np.pi) * (0.0000075 +
-    0.001868 * np.cos(day_angle) - 0.032077 * np.sin(day_angle) -
-    0.014615 * np.cos(2.0 * day_angle) - 0.040849 * np.sin(2.0 * day_angle))
+# def EoTS(hoy): # Equation of time from Duffie & Beckman and attributed to Spencer
+#     #(1971) and Iqbal (1983) [in minutes]
+#     day_angle = _calculate_simple_day_angle(dayofyear)
+#     return (1440.0 / 2 / np.pi) * (0.0000075 +
+#     0.001868 * np.cos(day_angle) - 0.032077 * np.sin(day_angle) -
+#     0.014615 * np.cos(2.0 * day_angle) - 0.040849 * np.sin(2.0 * day_angle))
 
-def EoTPVCDROM(hoy): # equation of time [in minutes]
-    # PVCDROM: http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
-    # Soteris A. Kalogirou, "Solar Energy Engineering Processes and
-    # Systems, 2nd Edition" Elselvier/Academic Press (2009).
-    bday = _calculate_simple_day_angle(dayofyear) - (2.0 * np.pi / 365.0) * 80.0
-    return 9.87 * np.sin(2.0 * bday) - 7.53 * np.cos(bday) - 1.5 * np.sin(bday)
+# def EoTPVCDROM(hoy): # equation of time [in minutes]
+#     # PVCDROM: http://www.pveducation.org/pvcdrom/2-properties-sunlight/solar-time
+#     # Soteris A. Kalogirou, "Solar Energy Engineering Processes and
+#     # Systems, 2nd Edition" Elselvier/Academic Press (2009).
+#     bday = _calculate_simple_day_angle(dayofyear) - (2.0 * np.pi / 365.0) * 80.0
+#     return 9.87 * np.sin(2.0 * bday) - 7.53 * np.cos(bday) - 1.5 * np.sin(bday)
 
 #%% 
 def tsol(hoy:np.array=HOYS_DEFAULT): # solar time [in decimal hours] introduce if function for east/west<<<<<<<<<
@@ -169,12 +296,12 @@ def thetai(hoy:np.array=HOYS_DEFAULT): # incidence angle [in radians]
     azimuths=0
     g = deg(azim(hoy)) - azimuths # if surface looks due S then azimuths=0
     return acos(cos(ele(hoy)) * sin(rad(inclination)) * cos(rad(g)) 
-    + sin(ele(hoy)) * cos(rad(inclination)))
+        + sin(ele(hoy)) * cos(rad(inclination)))
 
-def I0(hoy:np.array=HOYS_DEFAULT): # Extra-terrestrial solar irradiance [W/m2]
+def I0(hoy:np.array=HOYS_DEFAULT)->np.array: # Extra-terrestrial solar irradiance [W/m2]
     '''Appendix C in D.A. Katsaprakakis, Power Plant Synthesis, CRC Press, 2020.
     https://doi.org/10.1201/b22190.'''
-    return 1373 * (1 + 0.033 * cos(rad(360*(hoy-3*24)/365*24)))
+    return 1373 * (1 + 0.033 * np.cos(np.radians(360*(hoy-3*24)/365*24)))
 
 #%% ========================================== air mass
 def air_mass(hoy:np.array=HOYS_DEFAULT, method:str= 'wiki' ):
@@ -246,6 +373,7 @@ def Ib2(alt, hoy:np.array=HOYS_DEFAULT):
     """    
     a = np.power(abs(AM(hoy)), 0.678)
     return 1353 * ((1-0.14*alt) * np.power(0.7, a) + 0.14 * alt)
+
 # def Ibs(hoy): #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<adapted by ASHRAE?
 #     '''D.G. Stephenson, Equations for solar heat gain through windows, 
 #     Solar Energy. 9 (1965) 81–86. https://doi.org/10.1016/0038-092X(65)90207-0.blank
