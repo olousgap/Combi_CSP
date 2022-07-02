@@ -4,9 +4,11 @@ import numpy as np
 import numpy_financial as npf
 import pandas as pd 
 # from CombiCSP.SolarGeometry import *
-import CombiCSP.SolarGeometry as sgh
-import CombiCSP.CSP as CSP
+# import CombiCSP.SolarGeometry as sgh
+# import CombiCSP.CSP as cspC
+from CombiCSP.storage import pcm_rho
 from CSPCret import *
+
 
 '''Engineering inputs from CSPCret'''
 Pcsp = Ptrough # 250 [kW] Mosleh19

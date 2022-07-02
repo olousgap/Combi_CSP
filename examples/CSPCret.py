@@ -12,6 +12,7 @@ from scipy.interpolate import make_interp_spline, BSpline
 import CombiCSP.SolarGeometry as sgh
 from CombiCSP.CSP import *
 import CombiCSP.misc
+from CombiCSP.storage import Tr
 # from Demand_supply import *
 #%%
 hoy = sgh.HOYS_DEFAULT

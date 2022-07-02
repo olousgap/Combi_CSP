@@ -8,12 +8,12 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import make_interp_spline, BSpline
 
-
 # from SolarGeometry_hoy import *
 import CombiCSP.SolarGeometry as sgh
 import CombiCSP.CSP as cspC
 from CombiCSP.CSP import *
-import CombiCSP.misc
+from CombiCSP.storage import Tr
+# import CombiCSP.misc
 # TODO remove `from CombiCSP.CSP import *` especially parameter definitions like T
 # TODO split CSP to SolarTower, and SolarTrough
 
@@ -113,12 +113,12 @@ class SolarTroughCalcs():
     def Cg(self):
         return cspC.Cg_tro(Wc=self.Wc, Wr= self.Wr, L=self.L, N= self.N)
 
-    def perform_calcs_EW(self, Ib, Tr=1, hoy=sgh.HOYS_DEFAULT):
+    def perform_calcs_EW(self, Ib, Tr=318, hoy=sgh.HOYS_DEFAULT):
         """Calculation for a solar trough oriented EW for a year per hour 
 
         Args:
             Ib (pd.Series): beam irradiance
-            Tr (float, optional): _description_. Defaults to 1.
+            Tr (float, optional): [oC] the working fluid temperature in the receiver, 350oC at DISS pp.3,7 in Zarza04. Defaults to 318.
             hoy (np.array, optional): _description_. Defaults to sgh.HOYS_DEFAULT.
 
         Returns:
@@ -128,12 +128,12 @@ class SolarTroughCalcs():
         data = cspC.di_sst(Ib=Ib,costhetai= cspC.costhetai_EW(),IAM=IAM, Tr=Tr, Wc=self.Wc, Wr=self.Wr, Ws=self.Ws, L=self.L, N=self.N)
         return cspC.OutputContainer(data = data, A_helio=self.area, Ctow=self.Cg)
 
-    def perform_calcs_NS(self, Ib, Tr=1., hoy=sgh.HOYS_DEFAULT):
+    def perform_calcs_NS(self, Ib, Tr=318., hoy=sgh.HOYS_DEFAULT):
         """Calculation for a solar trough oriented NS for a year per hour 
 
         Args:
             Ib (pd.Series): beam irradiance
-            Tr (float, optional): _description_. Defaults to 1.
+            Tr (float, optional): [oC] the working fluid temperature in the receiver, 350oC at DISS pp.3,7 in Zarza04. Defaults to 318.
             hoy (np.array, optional): _description_. Defaults to sgh.HOYS_DEFAULT.
 
         Returns:
@@ -154,8 +154,8 @@ sotr = SolarTroughCalcs(
         ,Wr = 0.07 # tube outer diameter [m]
         ,Wc = 5.76
         )
-oew = sotr.perform_calcs_EW(Ib=Ib, Tr=cspC.Tr)
-ons = sotr.perform_calcs_NS(Ib=Ib, Tr=cspC.Tr)
+oew = sotr.perform_calcs_EW(Ib=Ib, Tr=Tr)
+ons = sotr.perform_calcs_NS(Ib=Ib, Tr=Tr)
 #%%
 # Trough dimensions
 foc_len = 0.88 # [m] focal length CSPP T.1 in Mosleh19
