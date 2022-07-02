@@ -8,7 +8,8 @@ import numpy as np
 import pandas as pd
 import pvlib
 
-from CombiCSP.SolarGeometry import HOYS_DEFAULT, EoT,d 
+from CombiCSP import HOYS_DEFAULT
+from CombiCSP.SolarGeometry import EoT,d 
 
 
 class SolarSystemLocation:
