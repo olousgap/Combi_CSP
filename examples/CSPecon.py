@@ -4,12 +4,12 @@ import numpy as np
 import pandas as pd 
 
 from CombiCSP.storage import pcm_rho
-from CSPCret import Ptrough, Etrough
+# from CSPCret import Ptrough, Etrough
 
 
 '''Engineering inputs from CSPCret'''
-Pcsp = Ptrough # 250 [kW] Mosleh19
-Ecsp = Etrough # 1713.200 [annual MWh] Mosleh19
+# Pcsp = Ptrough # 250 [kW] Mosleh19
+# Ecsp = Etrough # 1713.200 [annual MWh] Mosleh19
 
 #Ac = 3720 # replace with Ac(Wc, L, N) from CSPCret
 
@@ -19,20 +19,6 @@ mpcm = pcm_rho * 200 #mpcm = pcm_rho * Vpcm # kg/m3 * m3
 Eaux = 20 # [MWh]
 Eoil = Eaux*0.5883 # [BOE] 1MWh = 0.5883BOE https://www.convert-me.com/en/convert/energy/kwh/kwh-to-boe.html?u=kwh&v=1%2C000
 Egas = Eaux*3.412 # [m BTU] 1MWh = 3.412mBTU https://www.convert-me.com/en/convert/energy/kwh/kwh-to-mymmbtu.html?u=kwh&v=1%2C000
-
-def mbtu_m3(mbtu:float):
-    """Converts MMBtu (1 Million BTU units) to m^3 of natural gas
-
-    Args:
-        mbtu (_type_): _description_
-
-    Returns:
-        _type_: _description_
-    """    
-    '''
-    https://www.indexmundi.com/commodities/glossary/mmbtu#:~:text=Natural%20gas%20is%20measured%20in,on%20quality%2C%20when%20burned).
-    '''
-    return mbtu * 28.263682
 
 '''Financial inputs'''
 #discount_rate = 0.1 # Mosleh19 0.06...0.1

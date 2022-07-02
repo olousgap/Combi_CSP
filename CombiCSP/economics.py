@@ -101,3 +101,16 @@ def cashflow(Ecsp,csp_price,fuel_energy,eff,fuel_price,capital):
 def expenses(eff,fuel_price,capital): return round(Eaux/eff*fuel_price-0.04*capital,2)
 
 # %%
+def mbtu_m3(mbtu:float):
+    """Converts MMBtu (1 Million BTU units) to m^3 of natural gas
+
+    Args:
+        mbtu (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """    
+    '''
+    https://www.indexmundi.com/commodities/glossary/mmbtu#:~:text=Natural%20gas%20is%20measured%20in,on%20quality%2C%20when%20burned).
+    '''
+    return mbtu * 28.263682
