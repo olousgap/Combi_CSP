@@ -126,10 +126,10 @@ class OutputContainer():
         self.A_helio = A_helio
         self.Ctow = Ctow
 
-    def datah(self):
+    def hour_power_arr(self):
         return np.vstack((self.hoy, self.data))
     
-    def tow_xyz(self):
+    def data4surf(self):
         """stacks the data in days and hours 
 
         Returns:
@@ -137,7 +137,8 @@ class OutputContainer():
         """        
         return np.vstack(self.data).reshape((365,24))
     
-    def Ptower(self)->float:
+    @property
+    def PowerMax_MW(self)->float:
         """returns the maximum power of the Tower
 
         Returns:
@@ -145,22 +146,28 @@ class OutputContainer():
         """        
         return np.amax(self.data) 
 
-    def Etower(self)->float:
+    @property
+    def Energy_MWh(self)->float:
         """retunrs the total energy yield of the solar tower. 
 
         Returns:
            float : the total power per year in [MWh]
         """        
         return integrate.trapz(self.data).round(2)
+    @property
+    def CF(self)->float: 
+        """Capacity factor?
 
-    def CF_tow(self)->float: 
-        return self.Etower() / (8760 * self.Ptower())
+        Returns:
+            float: _description_
+        """        
+        return self.Energy_MWh / (8760 * self.PowerMax_MW)
     
     def as_df(self)->float: 
         return pd.DataFrame({'Power_MW':self.data}, index= self.hoy)
 
     def summary_tower_data(self):    
-        tow_data = np.vstack((self.A_helio,self.Ctow,self.Ptower(),self.Etower(),self.CF_tow())) # vertical stack
+        tow_data = np.vstack((self.A_helio,self.Ctow,self.PowerMax_MW,self.Energy_MWh,self.CF)) # vertical stack
         return tow_data
 
 

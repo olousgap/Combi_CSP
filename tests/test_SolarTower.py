@@ -32,5 +32,9 @@ def test_perform_calcs(st, Ib):
     assert np.abs(vals).sum() == pytest.approx(125038.6806487658 ,1e-3), 'Absolute sum failed'
     assert vals.std() == pytest.approx(18.822240024085243,1e-6) , 'Std is incorrect'
     assert np.abs(vals).std() == pytest.approx(17.6241589171352,1e-6) , 'Std is incorrect'
+    
+    # assert oTow.PowerMax_MW == pytest.approx(17.6241589171352,1e-6) , 'Max Power is incorrect'
+    # assert oTow.PowerMax_CF == pytest.approx(17.6241589171352,1e-6) , 'CF is incorrect'
+    # assert oTow.Energy_MWh == pytest.approx(17.6241589171352,1e-6) , 'Energy_MWh is incorrect'
 
 
