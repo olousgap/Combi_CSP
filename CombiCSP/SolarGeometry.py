@@ -5,11 +5,10 @@
     @Credit: heavily modified by N. Papadakis on 2022/07/22
 """
 #%%
-'''Geometry calculations as a function of hourly local time     ALT + SHIFT +0 to unfold levels
-                                                                ALT + 0 to fold levels'''
+'''Geometry calculations as a function of hourly local time '''
 import numpy as np
 import pandas as pd
-import pvlib
+# import pvlib
 # from pvlib import clearsky, atmosphere, solarposition
 
 # TODO mode HOYS_DEFAULT

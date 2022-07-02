@@ -1,3 +1,4 @@
+# This file contains the validation between the old and the new. 
 #%%
 import pathlib
 from scipy import integrate
@@ -10,7 +11,6 @@ from scipy.interpolate import make_interp_spline, BSpline
 
 from CombiCSP import SolarTroughCalcs, SolarTowerCalcs
 import CombiCSP.SolarGeometry as sgh
-import CombiCSP.CSP as cspC
 # from CombiCSP.CSP import solarII, di_sst,IAM_tow, IAM_tro, costhetai_NS, costhetai_EW, Ac, Cg_tro
 from CombiCSP.solar_tower import solarII,IAM_tow
 from CombiCSP.solar_trough import di_sst, IAM_tro, costhetai_NS, costhetai_EW, Ac, Cg_tro

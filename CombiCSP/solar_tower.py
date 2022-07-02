@@ -6,7 +6,7 @@
 """
 import numpy as np
 import pandas as pd
-from CombiCSP import OutputContainer, CtoK
+from CombiCSP import OutputContainer, CtoK, HOYS_DEFAULT
 import CombiCSP.SolarGeometry as sgh
   
 class SolarTowerCalcs():
@@ -23,7 +23,7 @@ class SolarTowerCalcs():
         self.Ctow = self.A_helio_m2 / self.Ar_m2
 
 
-    def perform_calc(self, Ib, transmittance=1, hoy=sgh.HOYS_DEFAULT):
+    def perform_calc(self, Ib, transmittance=1, hoy=HOYS_DEFAULT):
         self._hourly_results = OutputContainer(data = solarII(Ib=Ib,Trans=transmittance, IAM=IAM_tow(hoy),
                 A_helio=self.A_helio_m2,Ar=self.Ar_m2),
             A_helio=self.A_helio_m2, Ctow=self.Ctow)
@@ -83,7 +83,7 @@ def solarII(Ib:pd.Series,Trans:float,IAM:np.array,A_helio:float,Ar:float,
 
 #%% Incidence angle methods for towers
 
-def IAM_tow(hoy:np.array=sgh.HOYS_DEFAULT)->np.array : 
+def IAM_tow(hoy:np.array=HOYS_DEFAULT)->np.array : 
     """Incidence angle modifier of Tower (azimuth)
 
     for explanation see: http://www.solarpanelsplus.com/solar-tracking/
@@ -98,7 +98,7 @@ def IAM_tow(hoy:np.array=sgh.HOYS_DEFAULT)->np.array :
     """    
     return 1.66741484e-1 + 1.41517577e-2 * np.degrees(sgh.z(hoy)) - 9.51787164e-5 * np.degrees(sgh.z((hoy)))**2
     
-def IAM_tow2(hoy:np.array=sgh.HOYS_DEFAULT) ->np.array : # polynomial fit, see file IAM.py for data
+def IAM_tow2(hoy:np.array=HOYS_DEFAULT) ->np.array : # polynomial fit, see file IAM.py for data
     """Incidence angle modifier of Tower - elevation
 
     Args:

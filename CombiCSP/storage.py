@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*- 
 """
-    @Author: G. Arnaoutakis
+    @Author: G. Arnaoutakis, N. Papadakis
     @Date: 2022/mm/dd
     @Credit: original functions from G. Arnaoutakis
 """
 #%%
-'''Concentrating Solar Power plants                 ALT + SHIFT +0 to unfold levels
-                                                    ALT + 0 to fold levels'''
+'''Concentrating Solar Power plants'''
 import numpy as np
 import pandas as pd 
 import matplotlib.pyplot as plt

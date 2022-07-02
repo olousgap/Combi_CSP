@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*- 
 """
-    @Author: G. Arnaoutakis
+    @Author: G.Arnaoutakis, N.Papadakis
     @Date: 2022/06/30
+    @Credit: the functions were originally in  CSPEcon.py 
 """
 #%%
 import numpy as np

@@ -1,5 +1,10 @@
+"""
+    @Author: N. Papadakis, G. Arnaoutakis
+    @Date: 2022/mm/dd
+"""
 # Currently this is an unused module
 # Extensive testing needs to be carried out to validate the values.
+# -*- coding: utf-8 -*- 
 #%%
 import numpy as np
 

@@ -2,6 +2,7 @@
 """
     @Author: N. Papadakis
     @Date: 2022/07/02
+    @Credit: original functions based on G. Arnaoutakis
 """
 import numpy as np
 import pandas as pd

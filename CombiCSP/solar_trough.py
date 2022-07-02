@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*- 
 """
-    @Author: N. Papadakis
+    @Author: N. Papadakis, G. Arnaoutakis
     @Date: 2022/07/02
     @Credit: original functions from G. Arnaoutakis
 """
@@ -8,7 +8,7 @@
 import numpy as np
 import pandas as pd
 
-from CombiCSP import OutputContainer, CtoK
+from CombiCSP import OutputContainer, CtoK, HOYS_DEFAULT
 import CombiCSP.SolarGeometry as sgh
 import CombiCSP.CSP as cspC
 
@@ -45,19 +45,24 @@ class SolarTroughCalcs():
         
     @property
     def area(self):
+        """Collector area
+
+        Returns:
+            float: The collector are in [m^2]
+        """        
         return Ac(self.Wc, self.L, self.N)
 
     @property
     def Cg(self):
         return Cg_tro(Wc=self.Wc, Wr= self.Wr, L=self.L, N= self.N)
 
-    def perform_calcs_EW(self, Ib, Tr=318, hoy=sgh.HOYS_DEFAULT):
+    def perform_calcs_EW(self, Ib, Tr=318, hoy=HOYS_DEFAULT):
         """Calculation for a solar trough oriented EW for a year per hour 
 
         Args:
             Ib (pd.Series): beam irradiance
             Tr (float, optional): [oC] the working fluid temperature in the receiver, 350oC at DISS pp.3,7 in Zarza04. Defaults to 318.
-            hoy (np.array, optional): _description_. Defaults to sgh.HOYS_DEFAULT.
+            hoy (np.array, optional): _description_. Defaults to HOYS_DEFAULT.
 
         Returns:
             OutputContainer: Object that contains the power [MW] for each hour for the trough.
@@ -66,13 +71,13 @@ class SolarTroughCalcs():
         data = di_sst(Ib=Ib,costhetai= costhetai_EW(),IAM=IAM, Tr=Tr, Wc=self.Wc, Wr=self.Wr, Ws=self.Ws, L=self.L, N=self.N)
         return OutputContainer(data = data, A_helio=self.area, Ctow=self.Cg)
 
-    def perform_calcs_NS(self, Ib, Tr=318., hoy=sgh.HOYS_DEFAULT):
+    def perform_calcs_NS(self, Ib, Tr=318., hoy=HOYS_DEFAULT):
         """Calculation for a solar trough oriented NS for a year per hour 
 
         Args:
             Ib (pd.Series): beam irradiance
             Tr (float, optional): [oC] the working fluid temperature in the receiver, 350oC at DISS pp.3,7 in Zarza04. Defaults to 318.
-            hoy (np.array, optional): _description_. Defaults to sgh.HOYS_DEFAULT.
+            hoy (np.array, optional): _description_. Defaults to HOYS_DEFAULT.
 
         Returns:
             OutputContainer: Object that contains the power [MW] for each hour for the trough.
@@ -88,7 +93,7 @@ class SolarTroughCalcs():
 
 #%% Incidence angle methods for troughs
 
-def IAM_tro(hoy:np.array=sgh.HOYS_DEFAULT): 
+def IAM_tro(hoy:np.array=HOYS_DEFAULT): 
     """Incidence angle modifier of parabolic trough - equation1
     
     G.A. Salazar, N. Fraidenraich, C.A.A. de Oliveira, O. de Castro Vilela, M. Hongn, J.M. Gordon, 
@@ -108,7 +113,7 @@ def IAM_tro(hoy:np.array=sgh.HOYS_DEFAULT):
     #TODO needs rad despite thetai(hoy) already in rad???
     return np.cos(np.radians(thetai(hoy))) + 0.02012 * thetai(hoy) - 0.01030 * thetai(hoy)**2 
 
-def IAM_tro2(hoy:np.array=sgh.HOYS_DEFAULT):
+def IAM_tro2(hoy:np.array=HOYS_DEFAULT):
     '''N. Fraidenraich, C. Oliveira, A.F. Vieira da Cunha, J.M. Gordon, O.C. Vilela, 
     Analytical modeling of direct steam generation solar power plants, Solar Energy. 98 (2013) 511–522. 
     https://doi.org/10.1016/j.solener.2013.09.037.
@@ -124,7 +129,7 @@ def IAM_tro2(hoy:np.array=sgh.HOYS_DEFAULT):
     '''
     return np.cos(np.radians(thetai(hoy))) - 5.25097e-4 * thetai(hoy) - 2.859621e-5 * thetai(hoy)**2
 
-def IAM_tro3(hoy:np.array=sgh.HOYS_DEFAULT):
+def IAM_tro3(hoy:np.array=HOYS_DEFAULT):
     '''(Dudley, 1994)'''
     return np.cos(np.radians(thetai(hoy))) - 0.0003512 * thetai(hoy) - 0.00003137 * (thetai(hoy))**2# thetai in degrees
     '''pp.26 A.M. Patnode, Simulation and Performance Evaluation of Parabolic Trough Solar Power Plants, 
@@ -138,7 +143,7 @@ def IAM_tro4(hoy,foc_len,area,L):
     return 1 - foc_len / L *(1 + area**2 / 48 * foc_len**2) * np.tan(np.rad(thetai(hoy))) # needs rad despite thetai(hoy) already in rad???
 
 
-def costhetai(hoy:np.array=sgh.HOYS_DEFAULT): 
+def costhetai(hoy:np.array=HOYS_DEFAULT): 
     """Parabolic trough cosine function 
 
     The incidence angle for a plane rotated about a horizontal north-south axis with continuous east
@@ -156,7 +161,7 @@ def costhetai(hoy:np.array=sgh.HOYS_DEFAULT):
 
     return np.sqrt(np.cos(sgh.z(hoy))**2+np.cos(sgh.d(hoy))**2 * np.sin(np.radians(sgh.W(hoy)))**2)
 
-def costhetai_EW(hoy:np.array=sgh.HOYS_DEFAULT):
+def costhetai_EW(hoy:np.array=HOYS_DEFAULT):
     """Parabolic trough cosine function in East West orientation
 
     Gaul, H.; Rabl, A. Incidence-Angle Modifier and Average Optical Efficiency of Parabolic Trough Collectors. 
@@ -170,7 +175,7 @@ def costhetai_EW(hoy:np.array=sgh.HOYS_DEFAULT):
     """    
     return np.cos(sgh.d(hoy)) * (np.cos(np.radians(W(hoy)))**2 + np.tan(sgh.d(hoy)**2))**0.5
 
-def costhetai_NS(hoy:np.array=sgh.HOYS_DEFAULT):
+def costhetai_NS(hoy:np.array=HOYS_DEFAULT):
     """Parabolic trough cosine function in North-South orientation
 
     Gaul, H.; Rabl, A. Incidence-Angle Modifier and Average Optical Efficiency of Parabolic Trough Collectors. 
@@ -318,13 +323,13 @@ def CSCUL(hoys): # CSC heat loss ex.4.2
         UL = Qloss / (np.pi * Dr * L * (CtoK(Tr) - Ta))
     return UL # [W/m2K]
 
-def CSCP(Tfi, hoy:np.array= sgh.HOYS_DEFAULT, fname:str="example_data/tmy_35.015_25.755_2005_2020.csv"): 
+def CSCP(Tfi, hoy:np.array= HOYS_DEFAULT, fname:str="example_data/tmy_35.015_25.755_2005_2020.csv"): 
     # CSC thermal power ex.4.3
     """Concentrated Solar collect
 
     Args:
         Tfi (_type_): _description_
-        hoy (np.array, optional): _description_. Defaults to sgh.HOYS_DEFAULT.
+        hoy (np.array, optional): _description_. Defaults to HOYS_DEFAULT.
         fname (str, optional): _description_. Defaults to "example_data/tmy_35.015_25.755_2005_2020.csv".
 
     Returns:
@@ -336,12 +341,12 @@ def CSCP(Tfi, hoy:np.array= sgh.HOYS_DEFAULT, fname:str="example_data/tmy_35.015
     '''
     
     try:
-        pvgis = pd.read_csv(fname, header=16, nrows=8776-16, parse_dates=['time(UTC)'], engine='python')
+        pvgis_data = pd.read_csv(fname, header=16, nrows=8776-16, parse_dates=['time(UTC)'], engine='python')
     except:
         #TODO this is an exception until T = CSCP(Tr) is removed from this file (use tests)
-        pvgis = pd.read_csv("examples/"+fname, header=16, nrows=8776-16, parse_dates=['time(UTC)'], engine='python')
+        pvgis_data = pd.read_csv("examples/"+fname, header=16, nrows=8776-16, parse_dates=['time(UTC)'], engine='python')
 
-    Ib = pvgis.loc[:,'Gb(n)']
+    Ib = pvgis_data.loc[:,'Gb(n)']
     #S = 550 # incident solar radiation [W/m2]
     #UL = 4.50 # heat losses total thermal transmittance factor [W/m2Κ]
     Wc = 5.76 # width of the concentrating collector [m]
