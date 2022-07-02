@@ -2,13 +2,10 @@
 '''Geometry calculations as a function of hourly local time     ALT + SHIFT +0 to unfold levels
                                                                 ALT + 0 to fold levels'''
 import numpy as np
-# from pylab import *
-#for ineichen
 import pandas as pd
 import pvlib
-from pvlib import clearsky, atmosphere, solarposition
+# from pvlib import clearsky, atmosphere, solarposition
 
-# args = hoy = np.arange(1, 8761, 1) # hour of year
 # TODO mode HOYS_DEFAULT
 HOYS_DEFAULT = np.arange(1, 8761, 1) # hours of year
 
