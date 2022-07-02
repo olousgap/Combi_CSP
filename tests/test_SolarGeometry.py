@@ -1,6 +1,13 @@
+# -*- coding: utf-8 -*- 
+"""
+    @Author: N. Papadakis
+    @Date: 2022/07/02
+"""
+
 import pytest 
 import numpy as np
 import CombiCSP.SolarGeometry as sgh
+from CombiCSP.solar_system_location import SolarSystemLocation
 
 @pytest.fixture
 def hoy_ex1():
@@ -11,7 +18,7 @@ def hoy_ex1():
 def Crete():
     """Example site
     """    
-    return sgh.SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
+    return SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
 
 @pytest.fixture
 def R():
@@ -21,17 +28,6 @@ def R():
     Solar Energy. 18 (1976) 129–134."
     """
     return 1
-
-@pytest.fixture
-def alt():
-    """
-    """    
-    return sgh.SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
-@pytest.fixture
-def Ht():
-    """
-    """    
-    return sgh.SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
 
 class Test_da:
     def test_d1(self, hoy_ex1):

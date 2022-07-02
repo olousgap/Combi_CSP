@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*- 
+"""
+    @Author: G. Arnaoutakis, N. Papadakis
+    @Date: 2022/  
+"""
+
 #TODO this module contains unused functions
 #     they have not been tested and in some cases there are issues
 #     eg. theta_transversal exists twice
@@ -13,21 +19,6 @@ import CombiCSP.SolarGeometry as sgh
 from CombiCSP.SolarGeometry import W, z, d, thetai, azim, ele, HOYS_DEFAULT
 
 #%%
-# from numpy import log as ln
-# NaN = np.nan
-# pi = np.pi
-sin = np.sin
-cos = np.cos
-asin = np.arcsin
-acos = np.arccos
-tan = np.tan
-atan = np.arctan
-arctan = np.arctan
-atan2 = np.arctan2
-rad = np.radians
-deg = np.degrees
-
-
 
 #%%
 # generator data
@@ -36,27 +27,6 @@ deg = np.degrees
 
 
 #%% ===========================================================================
-
-def theta_i(hoy:np.array=HOYS_DEFAULT)->float: 
-    """Parabolic Trough longitudinal incidence angle
-
-    Buscemi, A.; Panno, D.; Ciulla, G.; Beccali, M.; Lo Brano, V. 
-    Concrete Thermal Energy Storage for Linear Fresnel Collectors: 
-    Exploiting the South Mediterranean’s Solar Potential for Agri-Food Processes. 
-    Energy Conversion and Management 2018, 166, 719–734, doi:10.1016/j.enconman.2018.04.075.
-    
-    #TODO  not tested
-
-    Args:
-        hoy (np.array): hour of year 
-
-    Returns:
-        float: not tested
-    """    
-    return arctan(cos(rad(azim(hoy))) * tan(rad(sgh.z(hoy)))* cos(theta_transversal()))
-
-
-
 def theta_transversal(hoy:np.array=HOYS_DEFAULT)->float : 
     """Parabolic Trough theta  transversal incidence angle
 
@@ -77,8 +47,26 @@ def theta_transversal(hoy:np.array=HOYS_DEFAULT)->float :
         float: theta  transversal incidence angle
     """    
 
-    return np.arctan(sin(rad(azim(hoy))) * tan(rad(sgh.z(hoy))))
+    return np.arctan(np.sin(np.radians(azim(hoy))) * np.tan(np.radians(sgh.z(hoy))))
 
+
+def theta_i(hoy:np.array=HOYS_DEFAULT)->float: 
+    """Parabolic Trough longitudinal incidence angle
+
+    Buscemi, A.; Panno, D.; Ciulla, G.; Beccali, M.; Lo Brano, V. 
+    Concrete Thermal Energy Storage for Linear Fresnel Collectors: 
+    Exploiting the South Mediterranean’s Solar Potential for Agri-Food Processes. 
+    Energy Conversion and Management 2018, 166, 719–734, doi:10.1016/j.enconman.2018.04.075.
+    
+    #TODO  not tested
+
+    Args:
+        hoy (np.array): hour of year 
+
+    Returns:
+        float: not tested
+    """    
+    return np.arctan(np.cos(np.radians(azim(hoy))) * np.tan(np.radians(sgh.z(hoy)))* np.cos(theta_transversal()))
 
 
 # not tested
@@ -98,15 +86,21 @@ def thetai_transversal(hoy:np.array=HOYS_DEFAULT):
     Returns:
         _type_: _description_
     """    
-    return np.arctan(abs(sin(azim(hoy)))/tan(ele(hoy)))
+    return np.arctan(abs(np.sin(azim(hoy)))/np.tan(ele(hoy)))
 
 def thetai_longtitudinal(hoy:np.array=HOYS_DEFAULT): 
-    return np.arcsin(cos(azim(hoy))*cos(ele(hoy)))
+    return np.arcsin(np.cos(azim(hoy))*np.cos(ele(hoy)))
 
 
 def shade_function(Ws,Wc, hoy:np.array=HOYS_DEFAULT):
-    """_summary_
+    """Shade function for Parabolic Trough Solar Power Plants, 
 
+    Stuetzle (2002) pp.29 in A.M. Patnode, Simulation and Performance Evaluation of Parabolic Trough Solar Power Plants, 
+    University of Wisconsin-Madison, 2006. https://minds.wisconsin.edu/handle/1793/7590 (accessed March 9, 2021).
+    N. Fraidenraich, C. Oliveira, A.F. Vieira da Cunha, J.M. Gordon, O.C. Vilela, 
+    Analytical modeling of direct steam generation solar power plants, Solar Energy. 98 (2013) 511–522. 
+    https://doi.org/10.1016/j.solener.2013.09.037.
+    
     Args:
         Ws (_type_): #TODO  solar angle
         Wc (_type_): _description_
@@ -115,17 +109,12 @@ def shade_function(Ws,Wc, hoy:np.array=HOYS_DEFAULT):
     Returns:
         _type_: _description_
     """    
-    ''' Stuetzle (2002) pp.29 in A.M. Patnode, Simulation and Performance Evaluation of Parabolic Trough Solar Power Plants, 
-    University of Wisconsin-Madison, 2006. https://minds.wisconsin.edu/handle/1793/7590 (accessed March 9, 2021).
-    N. Fraidenraich, C. Oliveira, A.F. Vieira da Cunha, J.M. Gordon, O.C. Vilela, 
-    Analytical modeling of direct steam generation solar power plants, Solar Energy. 98 (2013) 511–522. 
-    https://doi.org/10.1016/j.solener.2013.09.037.'''
-    return abs(Ws * cos(sgh.z(hoy)) / (Wc * cos(thetai(hoy))))
+    return abs(Ws * np.cos(z(hoy)) / (Wc * np.cos(thetai(hoy))))
 
 def end_loss(f,L,N, hoy:np.array=HOYS_DEFAULT):
     '''Lippke, 1995 in pp.31 in A.M. Patnode, Simulation and Performance Evaluation of Parabolic Trough Solar Power Plants, 
     University of Wisconsin-Madison, 2006. https://minds.wisconsin.edu/handle/1793/7590 (accessed March 9, 2021).'''
-    return (1 - (f * tan(thetai(hoy)) / L)) * N
+    return (1 - (f * np.tan(thetai(hoy)) / L)) * N
 
 # def loss_regr(input_dict):
 #     '''pp.36-42 in A.M. Patnode, Simulation and Performance Evaluation of Parabolic Trough Solar Power Plants, 

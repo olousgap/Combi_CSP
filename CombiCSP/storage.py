@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*- 
+"""
+    @Author: G. Arnaoutakis
+    @Date: 2022/mm/dd
+    @Credit: original functions from G. Arnaoutakis
+"""
 #%%
 '''Concentrating Solar Power plants                 ALT + SHIFT +0 to unfold levels
                                                     ALT + 0 to fold levels'''
@@ -5,44 +11,21 @@ import numpy as np
 import pandas as pd 
 import matplotlib.pyplot as plt
 from scipy import integrate
-# from pylab import *
 
-# from SolarGeometry_hoy import *
 import CombiCSP.SolarGeometry as sgh
-#from pcm import *
-#import pcm
-from iapws import IAPWS97
-#%%
-from numpy import log as ln
-NaN = np.nan
-pi = np.pi
-sin = np.sin
-cos = np.cos
-asin = np.arcsin
-acos = np.arccos
-tan = np.tan
-atan = np.arctan
-arctan = np.arctan
-atan2 = np.arctan2
-rad = np.radians
-deg = np.degrees
-
-z= sgh.z
-d= sgh.d
-W= sgh.W
-thetai= sgh.thetai
-azim = sgh.azim
-ele = sgh.ele
-
+# from CombiCSP.SolarGeometry import z,d, W
+# from CombiCSP.SolarGeometry import thetai, azim, ele
+# from iapws import IAPWS97
+# from numpy import pi, sin, cos, tan
 #%% material properties for storage
 #PCM data  Phase Change Material
 pcm_data = [[2200,2257,2110,2044,2380],
             [212,174,226,149.7,280],
             [282,308,333,380,250,802],
-            [NaN,0.5,0.5,0.5,0.52,5.0],
-            [1.733,1.588,1.240,NaN,NaN,NaN],
-            [2.553,1.650,1.341,NaN,NaN,NaN],
-            [0.2,0.2,0.3,1.0,NaN,0.15]] #NaNO2 assumption
+            [np.NaN,0.5,0.5,0.5,0.52,5.0],
+            [1.733,1.588,1.240,np.NaN,np.NaN,np.NaN],
+            [2.553,1.650,1.341,np.NaN,np.NaN,np.NaN],
+            [0.2,0.2,0.3,1.0,np.NaN,0.15]] #NaNO2 assumption
 pcm = pd.DataFrame(pcm_data,
     columns = ['NaNO2','NaNO3','KNO3','KOH','H250','NaCl']
     #, index = ['density', 'latent_heat', 'melting_point', 'thermal conduct. coeff', 'c_p Solid', 'c_p Liquid', 'cost' ]
@@ -145,7 +128,7 @@ def delta_s(x_a):
     doi:10.1115/1.4023026.
     '''
     R = 8.31446261815324 # [J⋅K−1⋅mol−1]
-    return R * ln(x_a)
+    return R * np.log(x_a)
 
 def mass_mix(x_a,x_b,m_a,m_b):
     m_nano3 = 84.9947 #g/mol
@@ -196,18 +179,19 @@ def cp_mix():
     return
 
 
-def pcm_temp():
-    '''https://stackabuse.com/solving-systems-of-linear-equations-with-pythons-numpy/
-    Y.-Q. Li, Y.-L. He, Z.-F. Wang, C. Xu, W. Wang, Exergy analysis of two phase change materials storage system 
-    for solar thermal power with finite-time thermodynamics, Renewable Energy. 39 (2012) 447–454. 
-    https://doi.org/10.1016/j.renene.2011.08.026.
-    H.J. Mosleh, R. Ahmadi, Linear parabolic trough solar power plant assisted with latent thermal energy storage system: 
-    A dynamic simulation, Applied Thermal Engineering. 161 (2019) 114204. https://doi.org/10.1016/j.applthermaleng.2019.114204.
-    '''
-    Tin = Tr
-    Nc = hp * Ap / mpcm * cpcm
-    T2 = Tmelt + (T - Tmelt) * np.exp(-Nc)
-    return T2 #Estore
+# def pcm_temp():
+#     #TODO this function did not work (T, cpcm were not available)
+#     '''https://stackabuse.com/solving-systems-of-linear-equations-with-pythons-numpy/
+#     Y.-Q. Li, Y.-L. He, Z.-F. Wang, C. Xu, W. Wang, Exergy analysis of two phase change materials storage system 
+#     for solar thermal power with finite-time thermodynamics, Renewable Energy. 39 (2012) 447–454. 
+#     https://doi.org/10.1016/j.renene.2011.08.026.
+#     H.J. Mosleh, R. Ahmadi, Linear parabolic trough solar power plant assisted with latent thermal energy storage system: 
+#     A dynamic simulation, Applied Thermal Engineering. 161 (2019) 114204. https://doi.org/10.1016/j.applthermaleng.2019.114204.
+#     '''
+#     Tin = Tr
+#     Nc = hp * Ap / mpcm * cpcm
+#     T2 = Tmelt + (T - Tmelt) * np.exp(-Nc)
+#     return T2 #Estore
 
 def phase_change(T):
     '''L. Solomon, A. Oztekin, Exergy analysis of cascaded encapsulated phase change material—

@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*- 
+"""
+    @Author: N. Papadakis
+    @Date: 2022/07/02
+"""
+
 import pathlib
 import pytest 
 import numpy as np

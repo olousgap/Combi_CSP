@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*- 
+"""
+    @Author: G. Arnaoutakis
+    @Date: 2022/06/30
+"""
 #%%
 import numpy as np
 import pandas as pd

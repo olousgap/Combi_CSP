@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*- 
+"""
+    @Author: N. Papadakis
+    @Date: 2022/07/02
+"""
 import pytest 
 import numpy as np
 import CombiCSP.SolarGeometry as sgh
