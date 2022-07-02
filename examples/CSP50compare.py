@@ -3,14 +3,22 @@ import pathlib
 import pandas as pd
 import numpy as np
 from scipy import integrate
+import matplotlib.pyplot as plt
+
+import numpy_financial as npf
 
 import CombiCSP.SolarGeometry as sgh
 import CombiCSP.misc as cspm
 import CombiCSP.economics as cspe
-from CombiCSP.CSP import *
+# from CombiCSP.CSP import *
+from CombiCSP.CSP import  solarII, IAM_tow, di_sst, costhetai_NS \
+    , IAM_tro , Ac,costhetai_EW, Cg_tro
+from CombiCSP.storage import Tr
 
 #import pcm
-from CSPecon import *
+# from CSPecon import *
+from CSPecon import csp_area_costs, power_block_cost, csp_energy_price \
+    ,csp_discount_rate, oil_price, Eoil
 
 hoy = sgh.HOYS_DEFAULT
 #%%

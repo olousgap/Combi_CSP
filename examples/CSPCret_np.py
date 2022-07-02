@@ -11,7 +11,7 @@ from scipy.interpolate import make_interp_spline, BSpline
 # from SolarGeometry_hoy import *
 import CombiCSP.SolarGeometry as sgh
 import CombiCSP.CSP as cspC
-from CombiCSP.CSP import *
+from CombiCSP.CSP import solarII, di_sst,IAM_tow, IAM_tro, costhetai_NS, costhetai_EW, Ac, Cg_tro
 from CombiCSP.storage import Tr
 from CombiCSP.SolarTrough import SolarTroughCalcs
 # import CombiCSP.misc
