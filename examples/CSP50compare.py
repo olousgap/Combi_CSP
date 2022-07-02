@@ -11,8 +11,11 @@ import CombiCSP.SolarGeometry as sgh
 import CombiCSP.misc as cspm
 import CombiCSP.economics as cspe
 # from CombiCSP.CSP import *
-from CombiCSP.CSP import  solarII, IAM_tow, di_sst, costhetai_NS \
-    , IAM_tro , Ac,costhetai_EW, Cg_tro
+# from CombiCSP.CSP import  solarII, IAM_tow, di_sst, costhetai_NS \
+#     , IAM_tro , Ac,costhetai_EW, Cg_tro
+from CombiCSP.solar_tower import solarII,IAM_tow
+from CombiCSP.solar_trough import di_sst, IAM_tro, costhetai_NS, costhetai_EW, Ac, Cg_tro
+
 from CombiCSP.storage import Tr
 
 #import pcm

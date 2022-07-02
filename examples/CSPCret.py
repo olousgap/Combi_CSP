@@ -3,15 +3,14 @@ import pathlib
 from scipy import integrate
 import numpy as np
 import pandas as pd
-# from pylab import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import make_interp_spline, BSpline
 
 
-# from SolarGeometry_hoy import *
 import CombiCSP.SolarGeometry as sgh
-from CombiCSP.CSP import solarII, di_sst,IAM_tow, IAM_tro, costhetai_NS, costhetai_EW, Ac, Cg_tro
+from CombiCSP.solar_tower import solarII,IAM_tow
+from CombiCSP.solar_trough import di_sst, IAM_tro, costhetai_NS, costhetai_EW, Ac, Cg_tro
 import CombiCSP.misc
 from CombiCSP.storage import Tr
 # from Demand_supply import *

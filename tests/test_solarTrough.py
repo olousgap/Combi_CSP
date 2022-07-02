@@ -6,7 +6,7 @@ import pandas as pd
 # import CombiCSP.SolarGeometry as sgh
 # import CombiCSP.Transmittance as cspTr
 import CombiCSP.CSP as cspC
-from CombiCSP.SolarTrough import SolarTroughCalcs
+from CombiCSP import SolarTroughCalcs
 
 @pytest.fixture
 def sotr():

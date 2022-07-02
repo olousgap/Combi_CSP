@@ -6,7 +6,7 @@ import pandas as pd
 # import CombiCSP.SolarGeometry as sgh
 # import CombiCSP.Transmittance as cspTr
 # import CombiCSP.CSP as cspC
-from CombiCSP.SolarTower import SolarTowerCalcs
+from CombiCSP import SolarTowerCalcs
 
 @pytest.fixture
 def st():

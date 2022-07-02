@@ -9,6 +9,7 @@ import pvlib
 from pvlib import clearsky, atmosphere, solarposition
 
 # args = hoy = np.arange(1, 8761, 1) # hour of year
+# TODO mode HOYS_DEFAULT
 HOYS_DEFAULT = np.arange(1, 8761, 1) # hours of year
 
 

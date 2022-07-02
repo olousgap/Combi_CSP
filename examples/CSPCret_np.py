@@ -8,15 +8,13 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import make_interp_spline, BSpline
 
-# from SolarGeometry_hoy import *
+from CombiCSP import SolarTroughCalcs, SolarTowerCalcs
 import CombiCSP.SolarGeometry as sgh
 import CombiCSP.CSP as cspC
-from CombiCSP.CSP import solarII, di_sst,IAM_tow, IAM_tro, costhetai_NS, costhetai_EW, Ac, Cg_tro
+# from CombiCSP.CSP import solarII, di_sst,IAM_tow, IAM_tro, costhetai_NS, costhetai_EW, Ac, Cg_tro
+from CombiCSP.solar_tower import solarII,IAM_tow
+from CombiCSP.solar_trough import di_sst, IAM_tro, costhetai_NS, costhetai_EW, Ac, Cg_tro
 from CombiCSP.storage import Tr
-from CombiCSP.SolarTrough import SolarTroughCalcs
-# import CombiCSP.misc
-# TODO remove `from CombiCSP.CSP import *` especially parameter definitions like T
-# TODO split CSP to SolarTower, and SolarTrough
 
 # from Demand_supply import *
 #%% Load data and constants
@@ -28,7 +26,7 @@ pvgis = pd.read_csv(FNAME, header=16, nrows=8776-16, parse_dates=['time(UTC)'], 
 Ib = pvgis.loc[:,'Gb(n)']
 
 #%%
-stc = cspC.SolarTowerCalcs(alt = 200*10e-3 , Ht = 0.1, Ar = 99.3 , A_helio = 225000)
+stc =  SolarTowerCalcs(alt = 200*10e-3 , Ht = 0.1, Ar = 99.3 , A_helio = 225000)
 oTow = stc.perform_calc(Ib)
 #%% This section contains the old code and the comparison
 
