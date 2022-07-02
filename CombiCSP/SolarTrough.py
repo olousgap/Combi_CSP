@@ -1,3 +1,4 @@
+from CombiCSP import OutputContainer
 import CombiCSP.SolarGeometry as sgh
 import CombiCSP.CSP as cspC
 
@@ -51,7 +52,7 @@ class SolarTroughCalcs():
         """ 
         IAM=cspC.IAM_tro(hoy)
         data = cspC.di_sst(Ib=Ib,costhetai= cspC.costhetai_EW(),IAM=IAM, Tr=Tr, Wc=self.Wc, Wr=self.Wr, Ws=self.Ws, L=self.L, N=self.N)
-        return cspC.OutputContainer(data = data, A_helio=self.area, Ctow=self.Cg)
+        return OutputContainer(data = data, A_helio=self.area, Ctow=self.Cg)
 
     def perform_calcs_NS(self, Ib, Tr=318., hoy=sgh.HOYS_DEFAULT):
         """Calculation for a solar trough oriented NS for a year per hour 
@@ -69,4 +70,4 @@ class SolarTroughCalcs():
                       Tr=Tr, 
                       Wc=self.Wc, Wr=self.Wr, Ws=self.Ws, 
                       L=self.L, N=self.N)
-        return cspC.OutputContainer(data = data, A_helio=self.area, Ctow=self.Cg)
+        return OutputContainer(data = data, A_helio=self.area, Ctow=self.Cg)

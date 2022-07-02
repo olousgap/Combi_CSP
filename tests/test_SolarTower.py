@@ -5,13 +5,14 @@ import pandas as pd
 
 # import CombiCSP.SolarGeometry as sgh
 # import CombiCSP.Transmittance as cspTr
-import CombiCSP.CSP as cspC
+# import CombiCSP.CSP as cspC
+from CombiCSP.SolarTower import SolarTowerCalcs
 
 @pytest.fixture
 def st():
     """SolarTower ExampleData
     """    
-    return cspC.SolarTowerCalcs(alt = 200*10e-3 , Ht = 0.1, Ar = 99.3 , A_helio = 225000)
+    return SolarTowerCalcs(alt = 200*10e-3 , Ht = 0.1, Ar = 99.3 , A_helio = 225000)
 
 
 @pytest.fixture
