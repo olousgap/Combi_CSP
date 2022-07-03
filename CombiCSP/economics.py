@@ -98,7 +98,20 @@ def irr(values): # http://nullege.com/codes/search/numpy.irr
 
 def cashflow(Ecsp,csp_price,fuel_energy,eff,fuel_price,capital): 
     return round(Ecsp*csp_price+fuel_energy/eff*fuel_price-0.04*capital,2)
-def expenses(eff,fuel_price,capital): return round(Eaux/eff*fuel_price-0.04*capital,2)
+
+def expenses(Eaux, eff,fuel_price,capital):
+    """_summary_
+
+    Args:
+        Eaux (_type_): auxilliary energy required to operate the facility 
+        eff (_type_): fuel efficiency
+        fuel_price (_type_): fuel price  [?]
+        capital (_type_): _description_
+
+    Returns:
+        _type_: expenses
+    """     
+    return round(Eaux/eff*fuel_price-0.04*capital,2)
 
 # %%
 def mbtu_m3(mbtu:float):
