@@ -12,19 +12,21 @@ import pandas as pd
 # import CombiCSP.SolarGeometry as sgh
 # import CombiCSP.Transmittance as cspTr
 import CombiCSP.CSP as cspC
-from CombiCSP import SolarTroughCalcs
+from CombiCSP import SolarTroughCalcs, SolarSystemLocation
 
 @pytest.fixture
 def sotr():
     """SolarTower ExampleData
     """    
+    slobj = SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
     return SolarTroughCalcs(
         foc_len = 0.88 # [m] focal length CSPP T.1 in Mosleh19
         ,N = 1800 # [m * troughs] 25 * 48 CSPP pp.4 in Mosleh19 for 250 kWe turbine
         ,L = 25 # [m * troughs] 12 * 40 DISS pp.3 in Zarza04 for 70MWe turbine  
         ,Ws = 18 # [m] width between rows 18 INDITEP in pp.6 Fraidenraich13, pp.5 Zarza06
         ,Wr = 0.07 # tube outer diameter [m]
-        ,Wc = 5.76
+        ,Wc = 5.76,
+        slobj= slobj
         )
 
 

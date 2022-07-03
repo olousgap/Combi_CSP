@@ -28,6 +28,23 @@ class SolarSystemLocation:
         self.mer = mer # 
         self.lon = lon # Crete 35.2401° N, 24.8093° E [east negative, west positive
 
+    @property
+    def lat_rad(self)->float:
+        """return latitude in radians
+
+        Returns:
+            _type_: _description_
+        """        
+        return np.radians(self.lat)
+    @property	
+    def long_rad(self)->float:
+        """return longitude in radians
+
+        Returns:
+            float: _description_
+        """        
+        return np.radians(self.long)
+    
     #%% ========================================== air mass
     def air_mass(self, hoy:np.array=HOYS_DEFAULT, method:str= 'wiki' ):
         """wrapper function for the different air mass

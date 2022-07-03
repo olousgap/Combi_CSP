@@ -5,6 +5,7 @@
     @Credit: original functions from G. Arnaoutakis
 """
 #%%
+from multiprocessing.sharedctypes import Value
 import numpy as np
 import pandas as pd
 
@@ -12,7 +13,8 @@ from CombiCSP import OutputContainer, CtoK, HOYS_DEFAULT
 import CombiCSP.SolarGeometry as sgh
 import CombiCSP.CSP as cspC
 
-from CombiCSP.SolarGeometry import thetai, W,d
+from CombiCSP.SolarGeometry import thetai, W
+from CombiCSP.solar_system_location import SolarSystemLocation, d
 
 
 class SolarTroughCalcs():
@@ -22,7 +24,8 @@ class SolarTroughCalcs():
         ,L = 25 
         ,Ws = 18 
         ,Wr = 0.07 
-        ,Wc = 5.76 
+        ,Wc = 5.76
+        , slobj:SolarSystemLocation =  None
         ):
         """_summary_
 
@@ -34,7 +37,10 @@ class SolarTroughCalcs():
             Wr (float): tube outer diameter [m]. Defaults to 0.07.
             Wc (float): collector width [m] 5.76 DISS pp.3 in Zarza04, 3.1 CSPP T.1 in Mosleh19 5-7.5 in SAM. Defaults to 5.76.
         """        
-        
+        if isinstance(slobj, SolarSystemLocation):
+            self._sl = slobj
+        else:
+            raise ValueError('Site Location has not been provided')
 
         self.foc_len = foc_len
         self.N = N
@@ -45,16 +51,55 @@ class SolarTroughCalcs():
         
     @property
     def area(self):
-        """Collector area
+        """returns the collector area. 
+
+        update Wc for geometry, see A. Rabl, Comparison of solar concentrators, Solar Energy. 18 (1976) 93–111.
+        
+        Args:
+            Wc (float): width of solar collector in m^2
+            L (float): length of solar collector in m^2
+            N (int): quantity of solar collectors. 
 
         Returns:
-            float: The collector are in [m^2]
-        """        
-        return Ac(self.Wc, self.L, self.N)
+            _type_: total collector area.
 
+
+        Returns:
+            float: The collector area in [m^2]
+        """        
+        return self.Wc * self.L * self.N
+    
+    def Ac(self): 
+        return self.Wc * self.L * self.N
+
+    def Ar(self):
+        """returns the receiver area. 
+
+        Args:
+            Wc (float): width of solar receiver in [m]
+            L (float): length of solar receiver in [m]
+            N (int): quantity of solar receivers. 
+
+        Returns:
+            _type_: total collector area
+        """    
+        return self.Wr * self.L * self.N
+    
     @property
-    def Cg(self):
-        return Cg_tro(Wc=self.Wc, Wr= self.Wr, L=self.L, N= self.N)
+    def Cg(self)->float:
+        """Geometrical Concentration 
+
+        Affected by the following properties:
+            Wc (float): width of collector in  [m]
+            Wr (float): width receiver in  [m]
+            L (float): length in  [m]
+            N (int): quantity of units []
+
+        Returns:
+            float: geometrical concentration of parabolic troughs [dimensionless]
+        """
+
+        return self.Ac() / self.Ar()
 
     def perform_calcs_EW(self, Ib, Tr=318, hoy=HOYS_DEFAULT):
         """Calculation for a solar trough oriented EW for a year per hour 
@@ -67,8 +112,14 @@ class SolarTroughCalcs():
         Returns:
             OutputContainer: Object that contains the power [MW] for each hour for the trough.
         """ 
-        IAM = IAM_tro(hoy)
-        data = di_sst(Ib=Ib,costhetai= costhetai_EW(),IAM=IAM, Tr=Tr, Wc=self.Wc, Wr=self.Wr, Ws=self.Ws, L=self.L, N=self.N)
+        IAM = self.IAM_tro(hoy)
+        
+        #Parabolic trough cosine function in East West orientation
+        #    Gaul, H.; Rabl, A. Incidence-Angle Modifier and Average Optical Efficiency of Parabolic Trough Collectors. 
+        #   Journal of Solar Energy Engineering 1980, 102, 16–21, doi:10.1115/1.3266115.
+        costhetai_EW_arr =  np.cos( d(hoy)) * (np.cos(np.radians(self._sl.W(hoy)))**2 + np.tan(d(hoy)**2))**0.5
+        
+        data = self.di_sst(hoy = hoy, Ib=Ib,costhetai= costhetai_EW_arr, Tr=Tr)
         return OutputContainer(data = data, A_helio=self.area, Ctow=self.Cg)
 
     def perform_calcs_NS(self, Ib, Tr=318., hoy=HOYS_DEFAULT):
@@ -82,13 +133,114 @@ class SolarTroughCalcs():
         Returns:
             OutputContainer: Object that contains the power [MW] for each hour for the trough.
         """        
-        IAM = IAM_tro(hoy)
-        data = di_sst(Ib=Ib,costhetai=costhetai_NS(),
-                      IAM=IAM, 
-                      Tr=Tr, 
-                      Wc=self.Wc, Wr=self.Wr, Ws=self.Ws, 
-                      L=self.L, N=self.N)
+
+        lat_rad = self._sl.lat_rad
+        #Parabolic trough cosine function in North-South orientation
+        #   Gaul, H.; Rabl, A. Incidence-Angle Modifier and Average Optical Efficiency of Parabolic Trough Collectors. 
+        #   Journal of Solar Energy Engineering 1980, 102, 16–21, doi:10.1115/1.3266115.
+        costhetai_NS_arr = np.cos(d(hoy)) * (np.sin(np.radians(self._sl.W(hoy)))**2 + 
+                (np.cos(lat_rad) *  np.cos(np.radians(self._sl.W(hoy))) + np.tan(d(hoy)) * np.sin(lat_rad))**2)**0.5
+ 
+        data = self.di_sst(hoy=hoy, Ib=Ib,costhetai=costhetai_NS_arr,
+                      Tr=Tr)
         return OutputContainer(data = data, A_helio=self.area, Ctow=self.Cg)
+    
+    def thetai(self, hoy:np.array=HOYS_DEFAULT, inclination=90., azimuths=0.)->np.array: #
+        """ Calculates the incidence angle [in radians]
+
+        #TODO check whether there is a dependence between azimuth and NS and EW type of CSP
+
+        Args:
+            hoy (np.array, optional): _description_. Defaults to HOYS_DEFAULT.
+            inclination (float, optional): _description_. Defaults to 90.
+            azimuths (float, optional): _description_. Defaults to 0.
+
+        Returns:
+            np.array: _description_
+        """        
+        g = np.degrees(self._sl.azim(hoy)) - azimuths # if surface looks due S then azimuths=0
+        elev = self._sl.ele(hoy)
+        return np.arccos(np.cos(elev) * np.sin(np.radians(inclination)) * np.cos(np.radians(g)) 
+            + np.sin(elev) * np.cos(np.radians(inclination)))
+
+
+    def IAM_tro(self, hoy:np.array=HOYS_DEFAULT): 
+        """Incidence angle modifier of parabolic trough - equation1
+        
+        G.A. Salazar, N. Fraidenraich, C.A.A. de Oliveira, O. de Castro Vilela, M. Hongn, J.M. Gordon, 
+        Analytic modeling of parabolic trough solar thermal power plants, Energy. 138 (2017) 1148–1156. 
+        https://doi.org/10.1016/j.energy.2017.07.110.
+
+        #TODO there are 4 different function for IAM_tro. They need to be consolidated in a single one and selected as an option.
+
+        # thetai in radians
+
+        Args:
+            hoy (np.array): hour of year
+
+        Returns:
+            _type_: _description_
+        """
+        #TODO needs rad despite thetai(hoy) already in rad???
+        return np.cos(np.radians(self.thetai(hoy))) + 0.02012 * self.thetai(hoy) - 0.01030 * self.thetai(hoy)**2 
+
+    def di_sst(self, hoy, Ib, costhetai, Tr, nG:float = 0.97)->pd.Series:
+        """Calculates the total power of the parabolic system
+
+        R.K. McGovern, W.J. Smith, Optimal concentration and temperatures of solar thermal power plants,
+        Energy Conversion and Management. 60 (2012) 226–232.
+        E. Zarza, L. Valenzuela, J. León, K. Hennecke, M. Eck, H.-D. Weyers, M. Eickhoff, 
+        Direct steam generation in parabolic troughs: Final results and conclusions of the DISS project, 
+        Energy. 29 (2004) 635–644. https://doi.org/10.1016/S0360-5442(03)00172-5.
+
+
+        Args:
+            hoy (np.array): hour of year
+            Ib (np.array): hour of year
+            costhetai (_type_): cosine function [rad]
+            IAM (_type_): incidence angle modifier
+            Tr (float): [oC] the working fluid temperature in the receiver, 350oC at DISS pp.3,7 in Zarza04 
+            nG (float): Generator efficiency [dimensionless]
+
+        Returns:
+            _type_: power in [MW].
+        """    
+        Wc = self.Wc # width of collectors in [m]
+        Wr = self.Wr # width of receiver in [m]
+        Ws = self.Ws # width of spacing between collectors in [m]
+        L = self.L   # length of units [m]
+        N = self.N   # number of units
+        
+        IAM = self.IAM_tro(hoy) # incidence angle modifier 
+        
+        
+        Effopt = 75 # [%] Optical efficiency of collector 74% INDITEP in pp.7 Fraidenraich13, pp.4 Zarza06
+        
+        Qin = Ib * costhetai* IAM * self.Ac() * Effopt/100 # Eq. 4  in McGovern12
+        
+        epsilon = 1 # the emissivity of the receiver’s material https://en.wikipedia.org/wiki/Emissivity
+        sigma = 5.67 * 1e-8 # [W/m2K4] Stefan – Boltzman constant
+        #Tr = 350 # [oC] the working fluid temperature in the receiver DISS pp.3,7 in Zarza04
+        Ta = 15 # [oC] ambient temperature close to the receiver 15 oC 288K
+        Tin = 200 # [oC] working fluid inlet temperature to the receiver DISS pp.3,7 in Zarza04
+        alpha = 1 # absorptivity of the receiver
+
+        Qrad = epsilon * sigma * self.Ar() * (CtoK(Tr)**4-CtoK(Ta)**4) # check model from Broesamle
+        Qconv = 0
+        Qnet = alpha * Qin - Qrad - Qconv # Eq. 8 in McGovern12
+        
+        # Turbine
+        Tcond = 30 # [oC] condenser temperature
+        Ts = 565 # [oC] steam temperature
+        n_Carnot = 1 - (CtoK(Tcond)/CtoK(Ts)) # Eq. 15  in McGovern12
+
+        nR = 0.375 # isentropic efficiency Salazar17
+        if Qnet.all() <= 0:
+            P = 0
+        else:
+            P = Qnet * nR * nG
+        return P/1e6 # convert W to MW
+
 
 
 #%% Incidence angle methods for troughs

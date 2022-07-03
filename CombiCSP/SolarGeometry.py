@@ -78,9 +78,8 @@ def azim(hoy:np.array=HOYS_DEFAULT)->np.array:
     return np.arcsin(np.cos(d(hoy)) * np.sin(np.radians(W(hoy))) / np.cos(ele(hoy)))
 
 #%%
-def thetai(hoy:np.array=HOYS_DEFAULT): # incidence angle [in radians]
-    inclination=90
-    azimuths=0
+def thetai(hoy:np.array=HOYS_DEFAULT, inclination=90, azimuths=0): # incidence angle [in radians]
+
     g = np.degrees(azim(hoy)) - azimuths # if surface looks due S then azimuths=0
     return np.arccos(np.cos(ele(hoy)) * np.sin(np.radians(inclination)) * np.cos(np.radians(g)) 
         + np.sin(ele(hoy)) * np.cos(np.radians(inclination)))
