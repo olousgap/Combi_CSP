@@ -55,3 +55,13 @@ installation requires:
 - numpy-financial 
 
 `conda install -c conda-forge numpy-financial`
+
+# TODO items
+
+- remove old procedural function of solar geometry 
+- remove old procedural functions that are now part of SolarTowerCalcs and SolarTroughCalcs
+- remove `CSPCret.py` 
+- Create a  `CombiCSP-Quickstart.ipynb` to showcase the package functionalitys
+- Write an equivalent version of CSP50Compare.py using the new class system
+- (low priority) Documentation
+- (low priority) submit to pypi

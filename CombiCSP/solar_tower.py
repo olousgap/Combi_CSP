@@ -28,12 +28,13 @@ class SolarTowerCalcs():
         else:
             self._sl = slobj
 
-    def perform_calc(self, Ib, transmittance=1, hoy=HOYS_DEFAULT):
+    def perform_calc(self, Ib, transmittance=1, nG=0.97, hoy=HOYS_DEFAULT):
         """Performs solar tower calculations
 
         Args:
             Ib (_type_): _description_
             transmittance (int, optional): _description_. Defaults to 1.
+            nG (float): Generator efficiency (TODO Crosscheck??)
             hoy (_type_, optional): _description_. Defaults to HOYS_DEFAULT.
 
         Returns:
@@ -116,6 +117,18 @@ class SolarTowerCalcs():
             np.array : Incidence angle modifier of Tower in rad
         """    
         return 1.66741484e-1 + 1.41517577e-2 * np.degrees(self._sl.z(hoy)) - 9.51787164e-5 * np.degrees(self._sl.z((hoy)))**2
+    
+    def mutate(self,   alt = None , Ht = None
+        , Ar = None 
+        , A_helio = None
+        , slobj:SolarSystemLocation = None):
+        alt = self.alt_m if alt is None else alt
+        Ht = self.Ht_km if Ht is None else Ht
+        Ar = self.Ar_m2 if Ar is None else Ar
+        A_helio = self.A_helio_m2 if A_helio is None else A_helio
+        slobj = self._sl if slobj is None else slobj
+        return SolarTowerCalcs(alt = alt, Ht=Ht, Ar=Ar, A_helio=A_helio, slobj=slobj)
+        
     
 def solarII(Ib:pd.Series,Trans:float,IAM:np.array,A_helio:float,Ar:float, 
             nG:float = 0.97)->pd.Series:

@@ -4,9 +4,8 @@
     @Date: 2022/  
 """
 
-#TODO this module contains unused functions
-#     they have not been tested and in some cases there are issues
-#     eg. theta_transversal exists twice
+#TODO this module contains unused functions (not  tested)
+#TODO    theta_transversal  function exists twice
 #%%
 '''Concentrating Solar Power plants'''
 import numpy as np
@@ -32,13 +31,13 @@ def theta_transversal(hoy:np.array=HOYS_DEFAULT)->float :
 
     #TODO This function has the same name with another one in the same module
     
+    #TODO  not tested
+    
 
     Buscemi, A.; Panno, D.; Ciulla, G.; Beccali, M.; Lo Brano, V. 
     Concrete Thermal Energy Storage for Linear Fresnel Collectors: 
     Exploiting the South Mediterranean’s Solar Potential for Agri-Food Processes. 
     Energy Conversion and Management 2018, 166, 719–734, doi:10.1016/j.enconman.2018.04.075.
-    
-    #TODO  not tested
 
     Args:
         hoy (np.array): hour of year 
