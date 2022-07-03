@@ -14,9 +14,9 @@ import matplotlib.pyplot as plt
 from scipy import integrate
 
 from iapws import IAPWS97
-from CombiCSP import CtoK
+from CombiCSP import CtoK, HOYS_DEFAULT
 import CombiCSP.SolarGeometry as sgh
-from CombiCSP.SolarGeometry import W, z, d, thetai, azim, ele, HOYS_DEFAULT
+from CombiCSP.SolarGeometry import W, z, d, thetai, azim, ele
 
 #%%
 

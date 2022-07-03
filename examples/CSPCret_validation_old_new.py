@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import make_interp_spline, BSpline
 
-from CombiCSP import SolarTroughCalcs, SolarTowerCalcs
+from CombiCSP import SolarTroughCalcs, SolarTowerCalcs, HOYS_DEFAULT, SolarSystemLocation
 import CombiCSP.SolarGeometry as sgh
 # from CombiCSP.CSP import solarII, di_sst,IAM_tow, IAM_tro, costhetai_NS, costhetai_EW, Ac, Cg_tro
 from CombiCSP.solar_tower import solarII,IAM_tow
@@ -18,15 +18,20 @@ from CombiCSP.storage import Tr
 
 # from Demand_supply import *
 #%% Load data and constants
-hoy = sgh.HOYS_DEFAULT
+hoy = HOYS_DEFAULT
 # read data from local file
 "tmy_35.010_26.130_2007_2016.csv"#Atherinolakos
 FNAME = pathlib.Path('example_data/tmy_35.015_25.755_2005_2020.csv')
 pvgis = pd.read_csv(FNAME, header=16, nrows=8776-16, parse_dates=['time(UTC)'], engine='python') 
 Ib = pvgis.loc[:,'Gb(n)']
+#%% Set Site location
+sslCrete = SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
 
 #%%
-stc =  SolarTowerCalcs(alt = 200*10e-3 , Ht = 0.1, Ar = 99.3 , A_helio = 225000)
+stc =  SolarTowerCalcs(alt = 200*10e-3 , Ht = 0.1, 
+                       Ar = 99.3 , A_helio = 225000,
+                       slobj= sslCrete
+                       )
 oTow = stc.perform_calc(Ib)
 #%% This section contains the old code and the comparison
 

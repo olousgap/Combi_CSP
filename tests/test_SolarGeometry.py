@@ -29,34 +29,6 @@ def R():
     """
     return 1
 
-class Test_da:
-    def test_d1(self, hoy_ex1):
-        assert sgh.d1(hoy_ex1)[0] == pytest.approx(-13.37218176, abs=1e-3)
-        assert sgh.eda(hoy_ex1, method='pveducation')[0] == pytest.approx(-13.37218176, abs=1e-3)
-        # pytest.approx(sgh.d1(h)[0], -13.37218176, abs=1e-3)
-        # pytest.approx(sgh.eda(h, method='pveducation')[0], -13.37218176, abs=1e-3)
-        
-    def test_d2(self, hoy_ex1):
-        assert sgh.d2(hoy_ex1)[0] == pytest.approx( 23.41331062609803, abs=1e-3)
-        assert sgh.eda(hoy_ex1, method='Katsaprakakis')[0] == pytest.approx( 23.41331062609803, abs=1e-3)
-        
-    def test_d3(self, hoy_ex1):
-        assert sgh.d3(hoy_ex1)[0] == pytest.approx( 23.413310626097925, abs=1e-3)
-        assert sgh.eda(hoy_ex1, method='-81')[0] == pytest.approx( 23.413310626097925, abs=1e-3)
-        
-    def test_d(self,hoy_ex1):
-        assert sgh.d(hoy_ex1)[0] == pytest.approx( -0.4005513174270792, abs=1e-3)
-        assert sgh.eda(hoy_ex1, method='wiki')[0] == pytest.approx( -0.4005513174270792, abs=1e-3)
-        assert sgh.eda(hoy_ex1)[0] == pytest.approx( -0.4005513174270792, abs=1e-3)
-    
-def test_eda_raise_ValueError(hoy_ex1):
-    with pytest.raises(ValueError):
-        sgh.eda(hoy_ex1,method='noncense')
-    sgh.eda(hoy_ex1,method='wiki')
-    sgh.eda(hoy_ex1,method='Katsaprakakis')
-    sgh.eda(hoy_ex1,method='-81')
-    sgh.eda(hoy_ex1,method='pveducation')
-    
     
      
 class Test_AM:

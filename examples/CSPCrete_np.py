@@ -9,8 +9,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import make_interp_spline, BSpline
 
 from CombiCSP.misc import  heatmap2d
-from CombiCSP import SolarTroughCalcs, SolarTowerCalcs, HOYS_DEFAULT
-import CombiCSP.SolarGeometry as sgh
+from CombiCSP import SolarTroughCalcs, SolarTowerCalcs, HOYS_DEFAULT,SolarSystemLocation
+# import CombiCSP.SolarGeometry as sgh
 from CombiCSP.storage import Tr
 
 # from Demand_supply import *
@@ -22,13 +22,18 @@ FNAME = pathlib.Path('example_data/tmy_35.015_25.755_2005_2020.csv')
 df_pvgis = pd.read_csv(FNAME, header=16, nrows=8776-16, parse_dates=['time(UTC)'], engine='python') 
 Ib = df_pvgis.loc[:,'Gb(n)']
 
+#%% Set Site location
+sslCrete = SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
+
 #%% Tower related dimensions
 # Ar = 99.3 # receiver area [m2] pp.44 in Pacheco
 # alt = 200*10e-3 #Height above sea level [m] # TODO this is probably 200*1e-3
 # Ht = 0.1 #np.arange(0.1,0.4,0.1) # Tower height [km]
 # A_helio = 225000 # SolarII 82,750 m² for 10MW https://en.wikipedia.org/wiki/The_Solar_Project
 
-stc =  SolarTowerCalcs(alt = 200*10e-3 , Ht = 0.1, Ar = 99.3 , A_helio = 225000)
+stc =  SolarTowerCalcs(alt = 200*10e-3 , Ht = 0.1, 
+        Ar = 99.3 , A_helio = 225000,
+        slobj=sslCrete)
 oTow = stc.perform_calc(Ib)
 #%%
 plt.plot(hoy, oTow.data, label='1')

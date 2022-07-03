@@ -8,10 +8,10 @@
 #%%
 import numpy as np
 
+from CombiCSP import HOYS_DEFAULT
 import CombiCSP.SolarGeometry as sgh
 from CombiCSP.SolarGeometry import z
 
-HOYS_DEFAULT= sgh.HOYS_DEFAULT
 
 #%%  ================================================= Transmittance
 # the following functions relate to the [heliostats](https://www.nrel.gov/csp/heliocon.html) 
