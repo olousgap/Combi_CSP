@@ -231,3 +231,45 @@ class Economic_environment():
                             npv_csp_tow, irr_csp_tow, 
                             cash_flow_tow)
         }
+        
+    def economics_for_SolarTrough(self, 
+        oTr:OutputContainer,
+        csp_area_costs,
+        csp_energy_price,
+        csp_discount_rate,
+        power_block_cost,
+        lifetime=range(30)):
+        """This function performs an economic analysis on the performance output of a csp
+
+        Args:
+            oTow (OutputContainer): _description_
+            csp_area_costs (_type_): _description_
+            csp_energy_price (_type_): _description_
+            csp_discount_rate (_type_): _description_
+            capital_csp (float): description
+            power_block_cost (_type_): _description_
+            Eoil (_type_): _description_
+            oil_price (_type_): _description_
+            lifetime (_type_, optional): _description_. Defaults to range(30).
+
+        Returns:
+            _type_: _description_
+        """    
+        capital_csp_tro = oTr.A_helio* csp_area_costs + oTr.PowerMax_MW*power_block_cost
+        revenue_csp_tro = cashflow(oTr.Energy_MWh,csp_energy_price,self._Eoil,0.4,-self.oil_price,capital_csp_tro)
+
+        cash_flow_tro = [-capital_csp_tro] + [revenue_csp_tro for i in range(30)]
+        dpb_tro = discounted_payback_period(csp_discount_rate, cash_flow_tro)
+        npv_csp_tro = npf.npv(csp_discount_rate, [-capital_csp_tro] \
+            + [revenue_csp_tro for i in range(30)])
+        irr_csp_tro = npf.irr([-capital_csp_tro] \
+            + [revenue_csp_tro for i in range(30)])
+        return {
+            'A_helio': oTr.A_helio,
+            'cash_flow_tow':cash_flow_tro,
+            'tow_scenaria': (oTr.A_helio, oTr.Ctow, 
+                        oTr.PowerMax_MW, oTr.Energy_MWh,
+                        oTr.CF, dpb_tro, 
+                        npv_csp_tro, irr_csp_tro, 
+                        cash_flow_tro)}
+# %%

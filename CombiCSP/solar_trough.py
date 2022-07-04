@@ -241,7 +241,31 @@ class SolarTroughCalcs():
             P = Qnet * nR * nG
         return P/1e6 # convert W to MW
 
-
+    
+    def mutate(self,foc_len = None 
+        ,N = None 
+        ,L = None 
+        ,Ws = None
+        ,Wr = None 
+        ,Wc = None
+        , slobj:SolarSystemLocation =  None):
+        foc_len = self.foc_len if foc_len is None else foc_len
+        N = self.N if N is None else N
+        L = self.L if L is None else L
+        Ws = self.Ws if Ws is None else Ws
+        Wr = self.Wr if Wr is None else Wr
+        Wc = self.Wc if Wc is None else Wc
+        slobj = self._sl if slobj is None else slobj
+        return SolarTroughCalcs(
+            foc_len = foc_len 
+            ,N = N 
+            ,L = L 
+            ,Ws = Ws 
+            ,Wr = Wr 
+            ,Wc =Wc 
+            , slobj=  slobj
+                                )
+        
 
 #%% Incidence angle methods for troughs
 

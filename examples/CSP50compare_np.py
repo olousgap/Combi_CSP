@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 import numpy_financial as npf
 
-from CombiCSP import HOYS_DEFAULT, SolarSystemLocation, SolarTowerCalcs, OutputContainer, Economic_environment
+from CombiCSP import HOYS_DEFAULT, SolarSystemLocation, SolarTowerCalcs, OutputContainer, Economic_environment, SolarTroughCalcs
 import CombiCSP.SolarGeometry as sgh
 import CombiCSP.misc as cspm
 import CombiCSP.economics as cspe
@@ -134,52 +134,94 @@ print('tests between original code and OOP completed without problems')
 
 #%%
 #%%
-# #%%
-# # Trough dimensions
-# foc_len = 0.88 # [m] focal length CSPP T.1 in Mosleh19
-# Wr = 0.07 # tube outer diameter [m]
-# Wc = 5.76 # collector width [m] 5.76 DISS pp.3 in Zarza04, 3.1 CSPP T.1 in Mosleh19 5-7.5 in SAM
-# Ws = 18 # [m] width between rows 18 INDITEP in pp.6 Fraidenraich13, pp.5 Zarza06
-# L = 25 # [m * troughs] 12 * 40 DISS pp.3 in Zarza04 for 70MWe turbine
+#%%
+# Trough dimensions
+foc_len = 0.88 # [m] focal length CSPP T.1 in Mosleh19
+Wr = 0.07 # tube outer diameter [m]
+Wc = 5.76 # collector width [m] 5.76 DISS pp.3 in Zarza04, 3.1 CSPP T.1 in Mosleh19 5-7.5 in SAM
+Ws = 18 # [m] width between rows 18 INDITEP in pp.6 Fraidenraich13, pp.5 Zarza06
+L = 25 # [m * troughs] 12 * 40 DISS pp.3 in Zarza04 for 70MWe turbine
 
-# trough_scenaria = []
-# troughew_scenaria = []
-# for N in np.arange(800,1301,100): # 100MW np.arange(1000,2001,100):
-#     area = Ac(Wc, L, N)
-#     trough = di_sst(Ib,costhetai_NS(),IAM_tro(hoy),Tr, Wc, Wr, Ws, L, N)
-#     troughew = di_sst(Ib,costhetai_EW(),IAM_tro(hoy),Tr, Wc, Wr, Ws, L, N)
-#     plt.plot(hoy, trough, label=N)#,xlim(100,600)
-#     plt.plot(hoy, troughew, label=N)#,xlim(100,600)
-#     datah = np.vstack((hoy, trough))
-#     tro_xyz = np.vstack(trough).reshape((365,24)) # reshape 8760,1 to 365,24
-#     Ptrough = np.amax(trough) # used in CSPecon .round(2)
-#     Ptroughew = np.amax(troughew) # used in CSPecon .round(2)
-#     Etrough = integrate.trapz(trough).round(2) # used in CSPecon
-#     Etroughew = integrate.trapz(troughew).round(2) # used in CSPecon
-#     CF_tro = Etrough / (8760 * Ptrough)#.round(2)
-#     CF_troew = Etroughew / (8760 * Ptroughew)#.round(2)
-#     tro_data = np.vstack((Ac(Wc, L, N),Cg_tro(Wc, Wr, L, N),Ptrough,Etrough,CF_tro)) # vertical stack
-#     tro_dataew = np.vstack((Ac(Wc, L, N),Cg_tro(Wc, Wr, L, N),Ptroughew,Etroughew,CF_troew)) # vertical stack
-#     # economics
-#     capital_csp_tro = area*csp_area_costs + Ptrough*power_block_cost
-#     revenue_csp_tro = cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro)
-#     cash_flow_tro = [-capital_csp_tro] + [revenue_csp_tro for i in range(30)]
-#     dpb_tro = cspe.discounted_payback_period(csp_discount_rate, cash_flow_tro)
-#     npv_csp_tro = npf.npv(csp_discount_rate, [-capital_csp_tro] \
-#         + [cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro) for i in range(30)])
-#     irr_csp_tro = npf.irr([-capital_csp_tro] \
-#         + [cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro) for i in range(30)])
-#     area_list.append(area)
-#     cash_flow_list.append(cash_flow_tro)
-#     trough_scenaria.append((Ac(Wc, L, N),Cg_tro(Wc, Wr, L, N),Ptrough,Etrough,CF_tro,dpb_tro,npv_csp_tro,irr_csp_tro,cash_flow_tro))
-#     troughew_scenaria.append((Ac(Wc, L, N),Cg_tro(Wc, Wr, L, N),Ptroughew,Etroughew,CF_troew,dpb_tro,npv_csp_tro,irr_csp_tro,cash_flow_tro))
-# plt.xlabel('Time (hour of year)')
-# plt.ylabel('Power (MW)'), 
-# plt.legend()
-# plt.title('Trough')
-# #xlim(0,87.60), ylim(0,80)
-# plt.show()
-# #%%
+
+## the following line should be uncommented. Otherwise the lists will grow from the Tower.
+# area_list = []  
+# cash_flow_list = []
+trough_scenaria = []
+troughew_scenaria = []
+for N in np.arange(800,1301,100): # 100MW np.arange(1000,2001,100):
+    area = Ac(Wc, L, N)
+    # NS calcs
+    trough = di_sst(Ib,costhetai_NS(),IAM_tro(hoy),Tr, Wc, Wr, Ws, L, N)
+    tro_xyz = np.vstack(trough).reshape((365,24)) # reshape 8760,1 to 365,24
+    Ptrough = np.amax(trough) # used in CSPecon .round(2)
+    Etrough = integrate.trapz(trough).round(2) # used in CSPecon
+    CF_tro = Etrough / (8760 * Ptrough)#.round(2)
+    tro_data = np.vstack((Ac(Wc, L, N),Cg_tro(Wc, Wr, L, N),Ptrough,Etrough,CF_tro)) # vertical stack
+    
+    # EW calcs
+    troughew = di_sst(Ib,costhetai_EW(),IAM_tro(hoy),Tr, Wc, Wr, Ws, L, N)
+    datah = np.vstack((hoy, trough))
+    Ptroughew = np.amax(troughew) # used in CSPecon .round(2)
+    Etroughew = integrate.trapz(troughew).round(2) # used in CSPecon
+    CF_troew = Etroughew / (8760 * Ptroughew)#.round(2)
+    tro_dataew = np.vstack((Ac(Wc, L, N),Cg_tro(Wc, Wr, L, N),Ptroughew,Etroughew,CF_troew)) # vertical stack
+
+    #plots
+    plt.plot(hoy, trough, label=N)#,xlim(100,600)
+    plt.plot(hoy, troughew, label=N)#,xlim(100,600)
+    # economics
+    capital_csp_tro = area*csp_area_costs + Ptrough*power_block_cost
+    revenue_csp_tro = cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro)
+    cash_flow_tro = [-capital_csp_tro] + [revenue_csp_tro for i in range(30)]
+    dpb_tro = cspe.discounted_payback_period(csp_discount_rate, cash_flow_tro)
+    npv_csp_tro = npf.npv(csp_discount_rate, [-capital_csp_tro] \
+        + [cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro) for i in range(30)])
+    irr_csp_tro = npf.irr([-capital_csp_tro] \
+        + [cspe.cashflow(Etrough,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tro) for i in range(30)])
+    area_list.append(area)
+    cash_flow_list.append(cash_flow_tro)
+    trough_scenaria.append((Ac(Wc, L, N),Cg_tro(Wc, Wr, L, N),Ptrough,Etrough,CF_tro,dpb_tro,npv_csp_tro,irr_csp_tro,cash_flow_tro))
+    troughew_scenaria.append((Ac(Wc, L, N),Cg_tro(Wc, Wr, L, N),Ptroughew,Etroughew,CF_troew,dpb_tro,npv_csp_tro,irr_csp_tro,cash_flow_tro))
+plt.xlabel('Time (hour of year)')
+plt.ylabel('Power (MW)'), 
+plt.legend()
+plt.title('Trough')
+#xlim(0,87.60), ylim(0,80)
+plt.show()
+
+#%%
+
+strc =  SolarTroughCalcs(foc_len=foc_len, N=1800, 
+        L=25, Wr=Wr, Wc=Wc, Ws = Ws,
+        slobj=sslCrete)
+
+ns_area_list = []  
+ns_cash_flow_list = []
+ns_trough_scenaria = []
+for N in np.arange(800,1301,100): # 100MW np.arange(1000,2001,100):
+    area = Ac(Wc, L, N)
+    oTr = strc.mutate(N=N).perform_calcs_NS(Ib=Ib,hoy= hoy, Tr=Tr)
+    tmp_res_Dic =ee.economics_for_SolarTrough(
+            oTr= oTr,
+            csp_area_costs= csp_area_costs,
+            csp_energy_price=csp_energy_price,
+            csp_discount_rate= csp_discount_rate,
+            power_block_cost=power_block_cost,
+        lifetime=range(30))
+    ns_area_list.append(tmp_res_Dic['A_helio'] )
+    ns_cash_flow_list.append(tmp_res_Dic['cash_flow_tow'])
+    ns_trough_scenaria.append(tmp_res_Dic['tow_scenaria'])
+#%%
+
+#%% Assertions 
+np.testing.assert_equal(area_list[6:], ns_area_list) 
+np.testing.assert_equal(cash_flow_list[6:], ns_cash_flow_list) 
+for k in range(len(ns_trough_scenaria)):
+    np.testing.assert_equal(ns_trough_scenaria[k][:8], trough_scenaria[k][:8]) 
+    np.testing.assert_equal(ns_trough_scenaria[k][8], trough_scenaria[k][8]) 
+
+print('tests between original code and OOP completed without problems')
+#%%
 # DPB = []
 # for (x,y) in zip(area_list,cash_flow_list):
 #     DPB.append(cspe.discounted_payback_period(csp_discount_rate, y).round(2))
