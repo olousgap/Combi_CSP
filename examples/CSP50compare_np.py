@@ -184,12 +184,36 @@ econ_dic = {
     'csp_area_costs': csp_area_costs,
     'csp_energy_price': csp_energy_price,
     'csp_discount_rate': csp_discount_rate,
+    'capital_csp': capital_csp,
     'power_block_cost': power_block_cost,
     'Eoil': Eoil,
     'oil_price': oil_price,
     
 }
-def economics_F(oTow:OutputContainer, csp_area_costs, csp_energy_price, csp_discount_rate,power_block_cost, Eoil, oil_price, lifetime=range(30)):
+def economics_F(oTow:OutputContainer, 
+    csp_area_costs, 
+    csp_energy_price, 
+    csp_discount_rate,
+    capital_csp, 
+    power_block_cost, 
+    Eoil, 
+    oil_price, 
+    lifetime=range(30)):
+    """This function performs an economic analysis on the performance output of a csp
+
+    Args:
+        oTow (OutputContainer): _description_
+        csp_area_costs (_type_): _description_
+        csp_energy_price (_type_): _description_
+        csp_discount_rate (_type_): _description_
+        power_block_cost (_type_): _description_
+        Eoil (_type_): _description_
+        oil_price (_type_): _description_
+        lifetime (_type_, optional): _description_. Defaults to range(30).
+
+    Returns:
+        _type_: _description_
+    """    
     capital_csp_tow = oTow.A_helio*csp_area_costs + oTow.PowerMax_MW*power_block_cost
     revenue_csp_tow = cspe.cashflow(oTow.Energy_MWh, csp_energy_price, Eoil, 0.4,-oil_price, capital_csp_tow)
     cash_flow_tow = [-capital_csp_tow] + [revenue_csp_tow for i in lifetime]
@@ -225,7 +249,108 @@ for k in range(len(tow_scenaria2)):
     np.testing.assert_equal(tow_scenaria2[k][8], tow_scenaria[k][8]) 
 
 #%%
-a =stc.mutate(A_helio=A_helio)
+class Economic_environment():
+    def __init__(self, 
+        oil_price:float, Eoil:float,
+        currency_units:str ='USD'):
+        
+        self._oil_price = oil_price
+        self._Eoil = Eoil
+        self.currency_units = currency_units
+
+    @property
+    def oil_price(self):
+        """return oil price
+
+        Returns:
+            float: _description_
+        """        
+        return self._oil_price
+
+    def MWh_to_BOE(self, energy_MWh):
+        """converts MWh to Barrel Oil Equivalent
+
+        # [BOE] 1MWh = 0.5883BOE https://www.convert-me.com/en/convert/energy/kwh/kwh-to-boe.html?u=kwh&v=1%2C000
+        
+        Args:
+            energy_MWh (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        return energy_MWh*0.588
+
+    def MWh_to_mBTU(self, energy_MWh):
+        """converts MWh to   Equivalent natural gas m^3
+
+        [m BTU] 1MWh = 3.412mBTU https://www.convert-me.com/en/convert/energy/kwh/kwh-to-mymmbtu.html?u=kwh&v=1%2C000
+
+        Args:
+            energy_MWh (_type_): _description_
+
+        Returns:
+            float: 
+        """
+        return energy_MWh*3.412
+
+    
+    def economics_for_Solar_tower(self, 
+            oTow:OutputContainer,
+            csp_area_costs,
+            csp_energy_price,
+            csp_discount_rate,
+            power_block_cost,
+            capital_csp,
+        lifetime=range(30)):
+        """This function performs an economic analysis on the performance output of a csp
+
+        Args:
+            oTow (OutputContainer): _description_
+            csp_area_costs (_type_): _description_
+            csp_energy_price (_type_): _description_
+            csp_discount_rate (_type_): _description_
+            capital_csp (float): description
+            power_block_cost (_type_): _description_
+            Eoil (_type_): _description_
+            oil_price (_type_): _description_
+            lifetime (_type_, optional): _description_. Defaults to range(30).
+
+        Returns:
+            _type_: _description_
+        """    
+
+        capital_csp_tow = oTow.A_helio* csp_area_costs + oTow.PowerMax_MW*power_block_cost
+        revenue_csp_tow = cspe.cashflow(oTow.Energy_MWh, 
+            csp_energy_price, self._Eoil, 
+            0.4,
+            -self.oil_price, capital_csp_tow)
+        cash_flow_tow = [-capital_csp_tow] + [revenue_csp_tow for i in lifetime]
+        dpb_tow = cspe.discounted_payback_period(csp_discount_rate, cash_flow_tow)
+        npv_csp_tow = npf.npv (csp_discount_rate, [-capital_csp_tow] + [cspe.cashflow(oTow.Energy_MWh,csp_energy_price,self._Eoil,0.4,-self.oil_price,capital_csp_tow) for i in lifetime])
+        irr_csp_tow = npf.irr([-capital_csp] + [cspe.cashflow(oTow.Energy_MWh,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tow) for i in lifetime])
+        return {
+            'A_helio': oTow.A_helio,
+            'cash_flow_tow':cash_flow_tow,
+            'tow_scenaria': (oTow.A_helio, oTow.Ctow, 
+                            oTow.PowerMax_MW, oTow.Energy_MWh,
+                            oTow.CF, dpb_tow, 
+                            npv_csp_tow, irr_csp_tow, 
+                            cash_flow_tow)
+        }
+
+ee = Economic_environment(
+    oil_price=oil_price, Eoil=Eoil,
+    currency_units='USD'
+)
+#%%
+ee.economics_for_Solar_tower(
+            oTow= oTow,
+            csp_area_costs= csp_area_costs,
+            csp_energy_price=csp_energy_price,
+            csp_discount_rate= csp_discount_rate,
+            power_block_cost=power_block_cost,
+            capital_csp=capital_csp,
+        lifetime=range(30))
 
 #%%
 #%%
