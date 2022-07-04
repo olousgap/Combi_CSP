@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 import numpy_financial as npf
 
-from CombiCSP import HOYS_DEFAULT, SolarSystemLocation, SolarTowerCalcs, OutputContainer
+from CombiCSP import HOYS_DEFAULT, SolarSystemLocation, SolarTowerCalcs, OutputContainer, Economic_environment
 import CombiCSP.SolarGeometry as sgh
 import CombiCSP.misc as cspm
 import CombiCSP.economics as cspe
@@ -16,8 +16,8 @@ from CombiCSP.solar_tower import solarII,IAM_tow
 from CombiCSP.solar_trough import di_sst, IAM_tro, costhetai_NS, costhetai_EW, Ac, Cg_tro
 
 from CombiCSP.storage import Tr
-from CombiCSP.storage import pcm_rho
 
+from CSP50_common_econ import *   # this is a development hack to avoid duplication
 #import pcm
 #%%
 
@@ -31,90 +31,6 @@ hoy = HOYS_DEFAULT
 
 # from CSPCret import Ptrough, Etrough
 
-
-'''Engineering inputs from CSPCret'''
-# Pcsp = Ptrough # 250 [kW] Mosleh19
-# Ecsp = Etrough # 1713.200 [annual MWh] Mosleh19
-# Ac = 3720 # replace with Ac(Wc, L, N) from CSPCret
-
-mpcm = pcm_rho * 200 #mpcm = pcm_rho * Vpcm # kg/m3 * m3
-
-#Paux = 9 # [MW] T.5 Pantaleo17
-Eaux = 20 # [MWh]
-Eoil = Eaux*0.5883 # [BOE] 1MWh = 0.5883BOE https://www.convert-me.com/en/convert/energy/kwh/kwh-to-boe.html?u=kwh&v=1%2C000
-Egas = Eaux*3.412 # [m BTU] 1MWh = 3.412mBTU https://www.convert-me.com/en/convert/energy/kwh/kwh-to-mymmbtu.html?u=kwh&v=1%2C000
-
-'''Financial inputs'''
-#discount_rate = 0.1 # Mosleh19 0.06...0.1
-
-
-''' The followind data pertain to Greece based on:
-[energy_price_E_MWh],[discount_rate] Υπουργική Απόφαση ΥΠΕΝ/ΔΑΠΕΕΚ/30971/1190/2020 - ΦΕΚ 1045/Β/26-3-2020'''
-energy_price_df = pd.DataFrame( [
-    ['CSP' , 248, 0.09],
-    ['CSP+Storage2h', 268,  0.09],
-    ['Biomass 1MW',   176,  0.08],
-    ['Biomass 5MW',   153,  0.074],
-    ['Biogas 1MW',    185,  0.08],
-    ['Biogas 5MW',    133,  0.074],
-    ['Hydro 3MW',      90,  0.08],
-    ['Hydro 15MW',     87,  0.08],
-    ['PV6KWroof',      87,  0.074]
-    ],
-    columns = ['type', 'price', 'discount_rate']).set_index('type', drop=True)
-print(energy_price_df)
-
-csp_energy_price = energy_price_df.loc['CSP','price']
-csp_pcm_energy_price = energy_price_df.loc['CSP+Storage2h', 'price']
-csp_discount_rate = energy_price_df.loc['CSP','discount_rate']
-
-bio_energy_price = energy_price_df.loc['Biomass 5MW', 'price']
-biogas_energy_price = energy_price_df.loc['Biogas 5MW', 'price']
-bio_discount_rate = energy_price_df.loc['Biomass 5MW','discount_rate']
-
-oil_price = 60 # np.arange(12, 112, 10)# [$/barrel] https://www.statista.com/statistics/262860/uk-brent-crude-oil-price-changes-since-1976/
-gas_price = 7 # np.arange(2.5, 7.1, 2)# [$/m BTU/year] https://www.statista.com/statistics/252791/natural-gas-prices/
-
-# alternative dataframes
-#data = [[248,0.09],[268,0.09],[176,0.08],[153,0.074],[185,0.08],[133,0.074],[90,0.08],[87,0.08],[87,0.074]]
-#[['csp',248,0.09],['csp_stor2h',268,0.09],['bio_burn_1MW',176,0.08],['bio_burn_5MW',153,0.074],['bio_gas1MW',185,0.08],['bio_gas5MW',133,0.074],['hydro3MW',90,0.08],['hydro15MW',87,0.08],['pv6KWroof',87,0.074]]
-#df = pd.DataFrame(energy_price, columns = ['Name', 'price (E/MWh)','discount_rate (%)']).transpose()
-#df[1].iloc[1]
-
-
-
-'''T.4 Turchi19 all in units [$/MWh]'''
-energy_cost = {'thermal_energy_storage': 6.2e4}
-
-'''all in units [$/kg] U. Herrmann, D.W. Kearney, 
-Survey of Thermal Energy Storage for Parabolic Trough Power Plants, 
-Journal of Solar Energy Engineering. 124 (2002) 145–152. 
-https://doi.org/10.1115/1.1467601.'''
-# taken from CSP.py pcm dataframe
-# pcm_cost = pcm['<salt>'].loc[6]
-
-'''all in units [$/MW] T.4 Turchi19, stokerCHP in pp.17 Biomass for Heat and Power IRENA report, 1e6/9.050=1.1e5 euro/MWth T.7 Pantaleo17
-# T.4 Turchi19, 1.16e6 T.2 Turchi10, 2.2e6 T.7 Pantaleo17'''
-
-power_cost_dic = {
-    'power_block_cost': 9.1e5,
-    'balance_of_plant':0.9e5,
-    'boiler_cost': 4e6,
-    'gasifier_cost': 6e6
-}
-
-boiler_cost = power_cost_dic['boiler_cost']
-gasifier_cost = power_cost_dic['gasifier_cost']
-power_block_cost = power_cost_dic['power_block_cost']
-
-'''T.4 Turchi19 all in units [$/m2]'''
-
-csp_area_costs_df = pd.DataFrame(
-    [[25, 150, 60]], index=['USD/m${^2}$'],
-    columns = ['site_dev','coll_cost','htf_cost'])
-csp_area_costs = csp_area_costs_df.iloc[0,:].sum()
-
-lifetime = np.arange(0, 31, 1)
 
 
 # End of Import from CSPEcon ==========================================================================================
@@ -248,109 +164,42 @@ for k in range(len(tow_scenaria2)):
     np.testing.assert_equal(tow_scenaria2[k][:8], tow_scenaria[k][:8]) 
     np.testing.assert_equal(tow_scenaria2[k][8], tow_scenaria[k][8]) 
 
+#%% [markdown]
+# The following uses a class to perform the analysis. 
 #%%
-class Economic_environment():
-    def __init__(self, 
-        oil_price:float, Eoil:float,
-        currency_units:str ='USD'):
-        
-        self._oil_price = oil_price
-        self._Eoil = Eoil
-        self.currency_units = currency_units
-
-    @property
-    def oil_price(self):
-        """return oil price
-
-        Returns:
-            float: _description_
-        """        
-        return self._oil_price
-
-    def MWh_to_BOE(self, energy_MWh):
-        """converts MWh to Barrel Oil Equivalent
-
-        # [BOE] 1MWh = 0.5883BOE https://www.convert-me.com/en/convert/energy/kwh/kwh-to-boe.html?u=kwh&v=1%2C000
-        
-        Args:
-            energy_MWh (_type_): _description_
-
-        Returns:
-            _type_: _description_
-        """
-        return energy_MWh*0.588
-
-    def MWh_to_mBTU(self, energy_MWh):
-        """converts MWh to   Equivalent natural gas m^3
-
-        [m BTU] 1MWh = 3.412mBTU https://www.convert-me.com/en/convert/energy/kwh/kwh-to-mymmbtu.html?u=kwh&v=1%2C000
-
-        Args:
-            energy_MWh (_type_): _description_
-
-        Returns:
-            float: 
-        """
-        return energy_MWh*3.412
-
-    
-    def economics_for_Solar_tower(self, 
-            oTow:OutputContainer,
-            csp_area_costs,
-            csp_energy_price,
-            csp_discount_rate,
-            power_block_cost,
-            capital_csp,
-        lifetime=range(30)):
-        """This function performs an economic analysis on the performance output of a csp
-
-        Args:
-            oTow (OutputContainer): _description_
-            csp_area_costs (_type_): _description_
-            csp_energy_price (_type_): _description_
-            csp_discount_rate (_type_): _description_
-            capital_csp (float): description
-            power_block_cost (_type_): _description_
-            Eoil (_type_): _description_
-            oil_price (_type_): _description_
-            lifetime (_type_, optional): _description_. Defaults to range(30).
-
-        Returns:
-            _type_: _description_
-        """    
-
-        capital_csp_tow = oTow.A_helio* csp_area_costs + oTow.PowerMax_MW*power_block_cost
-        revenue_csp_tow = cspe.cashflow(oTow.Energy_MWh, 
-            csp_energy_price, self._Eoil, 
-            0.4,
-            -self.oil_price, capital_csp_tow)
-        cash_flow_tow = [-capital_csp_tow] + [revenue_csp_tow for i in lifetime]
-        dpb_tow = cspe.discounted_payback_period(csp_discount_rate, cash_flow_tow)
-        npv_csp_tow = npf.npv (csp_discount_rate, [-capital_csp_tow] + [cspe.cashflow(oTow.Energy_MWh,csp_energy_price,self._Eoil,0.4,-self.oil_price,capital_csp_tow) for i in lifetime])
-        irr_csp_tow = npf.irr([-capital_csp] + [cspe.cashflow(oTow.Energy_MWh,csp_energy_price,Eoil,0.4,-oil_price,capital_csp_tow) for i in lifetime])
-        return {
-            'A_helio': oTow.A_helio,
-            'cash_flow_tow':cash_flow_tow,
-            'tow_scenaria': (oTow.A_helio, oTow.Ctow, 
-                            oTow.PowerMax_MW, oTow.Energy_MWh,
-                            oTow.CF, dpb_tow, 
-                            npv_csp_tow, irr_csp_tow, 
-                            cash_flow_tow)
-        }
 
 ee = Economic_environment(
     oil_price=oil_price, Eoil=Eoil,
     currency_units='USD'
 )
 #%%
-ee.economics_for_Solar_tower(
-            oTow= oTow,
+area_list3 = []
+cash_flow_list3 = []
+tow_scenaria3 = []
+for A_helio in np.arange(75000,125001,10000): # 100MW np.arange(150000,250001,10000):
+    o_tmp = stc.mutate(A_helio=A_helio).perform_calc(Ib)
+    tmp_res_Dic =ee.economics_for_Solar_tower(
+            oTow= o_tmp,
             csp_area_costs= csp_area_costs,
             csp_energy_price=csp_energy_price,
             csp_discount_rate= csp_discount_rate,
             power_block_cost=power_block_cost,
             capital_csp=capital_csp,
         lifetime=range(30))
+    area_list3.append(tmp_res_Dic['A_helio'] )
+    cash_flow_list3.append(tmp_res_Dic['cash_flow_tow'])
+    tow_scenaria3.append(tmp_res_Dic['tow_scenaria'])
+
+
+
+#%% Assertions 
+np.testing.assert_equal(area_list, area_list3) 
+np.testing.assert_equal(cash_flow_list, cash_flow_list3) 
+for k in range(len(tow_scenaria3)):
+    np.testing.assert_equal(tow_scenaria3[k][:8], tow_scenaria[k][:8]) 
+    np.testing.assert_equal(tow_scenaria3[k][8], tow_scenaria[k][8]) 
+
+print('tests between original code and OOP completed without problems')
 
 #%%
 #%%
