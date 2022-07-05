@@ -144,6 +144,9 @@ class SolarTroughCalcs():
         data = self.di_sst(hoy = hoy, Ib=Ib,costhetai= costhetai_EW_arr, Tr=Tr)
         return OutputContainer(data = data, A_helio=self.area, Ctow=self.Cg)
 
+    def costhetai_EW(self, hoy):
+        return  np.cos( d(hoy)) * (np.cos(np.radians(self._sl.W(hoy)))**2 + np.tan(d(hoy)**2))**0.5
+
     def perform_calcs_NS(self, Ib, Tr=318., hoy=HOYS_DEFAULT):
         """Calculation for a solar trough oriented NS for a year per hour 
 
@@ -167,6 +170,12 @@ class SolarTroughCalcs():
                       Tr=Tr)
         return OutputContainer(data = data, A_helio=self.area, Ctow=self.Cg)
     
+    def costhetai_NS(self, hoy):
+        lat_rad = self._sl.lat_rad
+        return np.cos(d(hoy)) * (np.sin(np.radians(self._sl.W(hoy)))**2 + 
+                (np.cos(lat_rad) *  np.cos(np.radians(self._sl.W(hoy))) + np.tan(d(hoy)) * np.sin(lat_rad))**2)**0.5
+ 
+
     def thetai(self, hoy:np.array=HOYS_DEFAULT, inclination=90., azimuths=0.)->np.array: #
         """ Calculates the incidence angle [in radians]
 

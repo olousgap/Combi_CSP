@@ -28,7 +28,10 @@ def CtoK(c: float|int):
 class OutputContainer():
     """this is a container for the data and reshaping them. 
 
-    For simplicity reason this assums that the time index will always be hourly the days of the year
+    **IMPORTANT NOTE**:    For simplicity reasons this assumes that the time index will always be hourly the days of the year
+
+    #TODO currently the names reflect the origins from the tower calculation, it should be changed to a more generic.
+    #TODO consider giving access to the original object that spawned this object.
 
     Returns:
         _type_: _description_
@@ -78,7 +81,7 @@ class OutputContainer():
         return integrate.trapz(self.data).round(2)
     @property
     def CF(self)->float: 
-        """Capacity factor?
+        """TODO Capacity factor?
 
         Returns:
             float: _description_
@@ -93,7 +96,7 @@ class OutputContainer():
         return tow_data
 
 
-def heatmap_sns(data, title:str= '', figsize:tuple=(15,8)):
+def heatmap2d_sns(data, title:str= '', figsize:tuple=(15,8)):
     ''' This function allows larger displays for the heatmap compared to the imshow.
 
     As a drawback it depends of seaborn.

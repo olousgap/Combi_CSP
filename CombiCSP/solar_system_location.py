@@ -4,6 +4,8 @@
     @Date: 2022/07/02
     @Credit: original functions based on G. Arnaoutakis
 """
+
+import pathlib
 import numpy as np
 import pandas as pd
 import pvlib
@@ -137,6 +139,47 @@ class SolarSystemLocation:
             np.array: solar azimuth angle in radians
         """   
         return np.arcsin(np.cos(d(hoy)) * np.sin(np.radians(self.W(hoy))) / np.cos(self.ele(hoy)))
+
+    def Ib_from_csv(self,FNAME:pathlib.Path)->pd.Series:
+        """loads data from a local csv folder
+
+        Args:
+            FNAME (pathlib.Path): path to csv file
+        """        
+        pvgis_data = pd.read_csv(FNAME, header=16, nrows=8776-16, parse_dates=['time(UTC)'], engine='python') 
+        self.Ib = pvgis_data.loc[:,'Gb(n)']
+        return self.Ib
+
+    def Ib_from_pvgis(self, tz: str = 'Europe/Athens', 
+        altitude:float = 400, 
+        name = 'Default')->pd.Series:
+        """connects to pvgis database and downloads the file.
+
+        Args:
+            tz (str, optional): Timezone. Defaults to 'Europe/Athens'.
+            altitude (float, optional): Site altitude in [m]. Defaults to 400.
+            name (str, optional): Name of the site . Defaults to 'Default'.
+
+        Returns:
+            the times of data are for the year 2020
+            pd.DataFrame: a Dataframe containing the following columns with index the hourly data
+                ghi:  global horizontal irradiance[W/m^2]
+                dni:  direct normal irradiance [W/m^2]
+                dhi:  diffuse horizontal irradiance [W/m^2]
+        """   
+        times = pd.date_range(start='2020-01-01', periods=8760, freq='1H', tz=tz) #end='2020-12-31', 
+        #TODO allow for modification of the times of start and end
+        solpos = pvlib.solarposition.get_solarposition(times, self.lat, self.lon)
+        apparent_zenith = solpos['apparent_zenith']
+        airmass = pvlib.atmosphere.get_relative_airmass(apparent_zenith)
+        pressure = pvlib.atmosphere.alt2pres(altitude)
+        airmass = pvlib.atmosphere.get_absolute_airmass(airmass, pressure)
+        linke_turbidity = pvlib.clearsky.lookup_linke_turbidity(times,  self.lat, self.lon)
+        dni_extra = pvlib.irradiance.get_extra_radiation(times)
+        pvlib_data = pvlib.clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
+        self.Ib= pvlib_data.dni
+        return pvlib_data
+
 
 # #TODO: consider creating a system/Unit parameters
 #  def thetai(hoy:np.array=HOYS_DEFAULT, inclination=90, azimuths=0): # incidence angle [in radians]
@@ -276,3 +319,33 @@ def d(hoy:np.array=HOYS_DEFAULT): # [in radians] https://en.wikipedia.org/wiki/S
     if dRightAscension.any() < 0: dRightAscension = dRightAscension + 2*np.pi
     return np.arcsin( np.sin( dEclipticObliquity ) * dSin_EclipticLongitude )
 
+
+
+def ineichen(latitude:float = 35, longitude: float = 24, 
+    tz: str = 'Europe/Athens', 
+    altitude:float = 400, 
+    name = 'Ierapetra' )->pd.DataFrame:
+    """function that calls the pvgis and obtains the meteorological data
+
+    Args:
+        latitude (float, optional): _description_. Defaults to 35.
+        longitude (float, optional): _description_. Defaults to 24.
+        tz (str, optional): _description_. Defaults to 'Europe/Athens'.
+        altitude (float, optional): _description_. Defaults to 400.
+        name (str, optional): _description_. Defaults to 'Ierapetra'.
+
+    Returns:
+        pd.DataFrame: a Dataframe containing the following columns with index the hourly data
+            ghi:  global horizontal irradiance[W/m^2]
+            dni:  direct normal irradiance [W/m^2]
+            dhi:  diffuse horizontal irradiance [W/m^2]
+    """   
+    times = pd.date_range(start='2020-01-01', periods=8760, freq='1H', tz=tz) #end='2020-12-31', 
+    solpos = pvlib.solarposition.get_solarposition(times, latitude, longitude)
+    apparent_zenith = solpos['apparent_zenith']
+    airmass = pvlib.atmosphere.get_relative_airmass(apparent_zenith)
+    pressure = pvlib.atmosphere.alt2pres(altitude)
+    airmass = pvlib.atmosphere.get_absolute_airmass(airmass, pressure)
+    linke_turbidity = pvlib.clearsky.lookup_linke_turbidity(times, latitude, longitude)
+    dni_extra = pvlib.irradiance.get_extra_radiation(times)
+    return pvlib.clearsky.ineichen(apparent_zenith, airmass, linke_turbidity, altitude, dni_extra)
