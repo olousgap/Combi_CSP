@@ -191,16 +191,15 @@ plt.show()
 
 #%%
 
-strc =  SolarTroughCalcs(foc_len=foc_len, N=1800, 
-        L=25, Wr=Wr, Wc=Wc, Ws = Ws,
+strc =  SolarTroughCalcs(foc_len=foc_len, N=N, 
+        L=L, Wr=Wr, Wc=Wc, Ws = Ws,
         slobj=sslCrete)
 
 ns_area_list = []  
 ns_cash_flow_list = []
 ns_trough_scenaria = []
-for N in np.arange(800,1301,100): # 100MW np.arange(1000,2001,100):
-    area = Ac(Wc, L, N)
-    oTr = strc.mutate(N=N).perform_calcs_NS(Ib=Ib,hoy= hoy, Tr=Tr)
+for N_i in np.arange(800,1301,100): # 100MW np.arange(1000,2001,100):
+    oTr = strc.mutate(N=N_i).perform_calcs_NS(Ib=Ib,hoy= hoy, Tr=Tr)
     tmp_res_Dic =ee.economics_for_SolarTrough(
             oTr= oTr,
             csp_area_costs= csp_area_costs,
@@ -209,8 +208,9 @@ for N in np.arange(800,1301,100): # 100MW np.arange(1000,2001,100):
             power_block_cost=power_block_cost,
         lifetime=range(30))
     ns_area_list.append(tmp_res_Dic['A_helio'] )
-    ns_cash_flow_list.append(tmp_res_Dic['cash_flow_tow'])
-    ns_trough_scenaria.append(tmp_res_Dic['tow_scenaria'])
+    ns_cash_flow_list.append(tmp_res_Dic['cash_flow'])
+    ns_trough_scenaria.append(tmp_res_Dic['scenaria'])
+
 #%%
 
 #%% Assertions 
@@ -222,6 +222,20 @@ for k in range(len(ns_trough_scenaria)):
 
 print('tests between original code and OOP completed without problems')
 #%%
+
+strc =  SolarTroughCalcs(foc_len=foc_len, N=1800, 
+        L=L, Wr=Wr, Wc=Wc, Ws = Ws,
+        slobj=sslCrete)
+oTr = strc.perform_calcs_NS(Ib=Ib,hoy= hoy, Tr=Tr)
+tmp_res_Dic =ee.economics_for_SolarTrough(
+        oTr= oTr,
+        csp_area_costs= csp_area_costs,
+        csp_energy_price=csp_energy_price,
+        csp_discount_rate= csp_discount_rate,
+        power_block_cost=power_block_cost,
+    lifetime=range(30))
+#%%
+
 # DPB = []
 # for (x,y) in zip(area_list,cash_flow_list):
 #     DPB.append(cspe.discounted_payback_period(csp_discount_rate, y).round(2))

@@ -2,8 +2,7 @@ import pathlib
 import numpy as np
 import pandas as pd
 import pytest
-from CombiCSP import Economic_environment, SolarSystemLocation, SolarTowerCalcs
-
+from CombiCSP import Economic_environment, SolarSystemLocation, SolarTowerCalcs, SolarTroughCalcs
 
 @pytest.fixture
 def st():
@@ -11,6 +10,8 @@ def st():
     """    
     slobj = SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
     return SolarTowerCalcs(alt = 200*10e-3 , Ht = 0.1, Ar = 99.3 , A_helio = 225000, slobj=slobj)
+
+
 
 @pytest.fixture
 def ee():
@@ -48,11 +49,11 @@ def test_ee_tower(st, ee, Ib):
         lifetime=range(30))
     assert tmp_res_Dic['A_helio'] == 225000
     np.testing.assert_almost_equal(
-            tmp_res_Dic['cash_flow_tow'][:2],
+            tmp_res_Dic['cash_flow'][:2],
             [-106352083.86326265, 23230996.15] )
 
     np.testing.assert_almost_equal(
-        tmp_res_Dic['tow_scenaria'][:8],
+        tmp_res_Dic['scenaria'][:8],
         (225000,
         2265.8610271903326,
         58.76602622336556,
@@ -61,13 +62,5 @@ def test_ee_tower(st, ee, Ib):
         6.168374333872717,
         132315133.65660718,
         4.646199229999997) )
-    np.testing.assert_almost_equal(
-        tmp_res_Dic['tow_scenaria'][:8],
-        (225000,
-        2265.8610271903326,
-        58.76602622336556,
-        110834.05,
-        0.21529937662783125,
-        6.168374333872717,
-        132315133.65660718,
-        4.646199229999997) )
+
+

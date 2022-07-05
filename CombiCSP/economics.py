@@ -135,6 +135,8 @@ def mbtu_m3(mbtu:float):
 class Economic_environment():
     """this is a class that is responsible for containing basic economic parameters for fiscal analysis
     
+    @TODO this class requires extensive rework to make it more generic. (more specifically exposure to the npv, dpb etc functions should be provided)
+
     
     """    
     def __init__(self, 
@@ -214,18 +216,18 @@ class Economic_environment():
         """    
 
         capital_csp_tow = oTow.A_helio* csp_area_costs + oTow.PowerMax_MW*power_block_cost
-        revenue_csp_tow = cashflow(oTow.Energy_MWh, 
-            csp_energy_price, self._Eoil, 
-            0.4,
-            -self.oil_price, capital_csp_tow)
+        revenue_csp_tow = cashflow(oTow.Energy_MWh, csp_energy_price, self._Eoil, 0.4, -self.oil_price, capital_csp_tow)
+                          
         cash_flow_tow = [-capital_csp_tow] + [revenue_csp_tow for i in lifetime]
         dpb_tow = discounted_payback_period(csp_discount_rate, cash_flow_tow)
-        npv_csp_tow = npf.npv (csp_discount_rate, [-capital_csp_tow] + [cashflow(oTow.Energy_MWh,csp_energy_price,self._Eoil,0.4,-self.oil_price,capital_csp_tow) for i in lifetime])
-        irr_csp_tow = npf.irr([-capital_csp] + [cashflow(oTow.Energy_MWh,csp_energy_price,self._Eoil,0.4,-self.oil_price,capital_csp_tow) for i in lifetime])
+        npv_csp_tow = npf.npv (csp_discount_rate, [-capital_csp_tow] + [revenue_csp_tow for i in lifetime])
+        irr_csp_tow = npf.irr([-capital_csp] + [revenue_csp_tow for i in lifetime])
+        # TODO the above line should be  (i.e. `capital_csp` -> `capital_csp_tow`)
+        # irr_csp_tow = npf.irr([-capital_csp_tow] + [revenue_csp_tow for i in lifetime])
         return {
             'A_helio': oTow.A_helio,
-            'cash_flow_tow':cash_flow_tow,
-            'tow_scenaria': (oTow.A_helio, oTow.Ctow, 
+            'cash_flow':cash_flow_tow,
+            'scenaria': (oTow.A_helio, oTow.Ctow, 
                             oTow.PowerMax_MW, oTow.Energy_MWh,
                             oTow.CF, dpb_tow, 
                             npv_csp_tow, irr_csp_tow, 
@@ -258,16 +260,16 @@ class Economic_environment():
         capital_csp_tro = oTr.A_helio* csp_area_costs + oTr.PowerMax_MW*power_block_cost
         revenue_csp_tro = cashflow(oTr.Energy_MWh,csp_energy_price,self._Eoil,0.4,-self.oil_price,capital_csp_tro)
 
-        cash_flow_tro = [-capital_csp_tro] + [revenue_csp_tro for i in range(30)]
+        cash_flow_tro = [-capital_csp_tro] + [revenue_csp_tro for i in lifetime]
         dpb_tro = discounted_payback_period(csp_discount_rate, cash_flow_tro)
         npv_csp_tro = npf.npv(csp_discount_rate, [-capital_csp_tro] \
-            + [revenue_csp_tro for i in range(30)])
+            + [revenue_csp_tro for i in lifetime])
         irr_csp_tro = npf.irr([-capital_csp_tro] \
-            + [revenue_csp_tro for i in range(30)])
+            + [revenue_csp_tro for i in lifetime])
         return {
             'A_helio': oTr.A_helio,
-            'cash_flow_tow':cash_flow_tro,
-            'tow_scenaria': (oTr.A_helio, oTr.Ctow, 
+            'cash_flow':cash_flow_tro,
+            'scenaria': (oTr.A_helio, oTr.Ctow, 
                         oTr.PowerMax_MW, oTr.Energy_MWh,
                         oTr.CF, dpb_tro, 
                         npv_csp_tro, irr_csp_tro, 

@@ -48,7 +48,22 @@ class SolarTroughCalcs():
         self.Ws = Ws
         self.Wr = Wr
         self.Wc = Wc 
-        
+
+    def print_system_summary(self):
+        print(f"""
+--------  System Parameters
+-> Focal Lentth     (foc_len) = {self.foc_len}  
+-> Number of units  (   N   ) = {self.N}      
+-> Unit length      (   L   ) =  {self.L} 
+-> Unit spacing?    (   Ws  ) = {self.Ws} 
+-> Receiver width   (   Wr  ) = {self.Wr}
+-> Collector width  (   Wc  ) = {self.Wc}
+--------  Derived Quantities
+-> Collector area   (   Ac  ) = {self.Ac()}
+-> Receiver area    (   Ar  ) = {self.Ar()}
+-> Concetration f   (   Cg  ) = {self.Cg}
+        """)        
+
     @property
     def area(self):
         """returns the collector area. 
@@ -69,19 +84,26 @@ class SolarTroughCalcs():
         """        
         return self.Wc * self.L * self.N
     
-    def Ac(self): 
+    def Ac(self)->float:
+        """collector area in m^2
+
+        (Assumption): it is the width*length times the number of units
+
+        Returns:
+            float: collector area in m^2
+        """        
         return self.Wc * self.L * self.N
 
-    def Ar(self):
+    def Ar(self)->float:
         """returns the receiver area. 
 
         Args:
-            Wc (float): width of solar receiver in [m]
+            Wr (float): width of solar receiver in [m]
             L (float): length of solar receiver in [m]
             N (int): quantity of solar receivers. 
 
         Returns:
-            _type_: total collector area
+            float: total receiver area in m^2
         """    
         return self.Wr * self.L * self.N
     

@@ -16,7 +16,7 @@ from CombiCSP import SolarTroughCalcs, SolarSystemLocation
 
 @pytest.fixture
 def sotr():
-    """SolarTower ExampleData
+    """SolarTrough ExampleData
     """    
     slobj = SolarSystemLocation(lat=35, lon=24, mer=-25, dt_gmt=+2, alt=0)
     return SolarTroughCalcs(
