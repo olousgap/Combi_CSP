@@ -2,3 +2,6 @@
 /tex/
 __pycache__/
 
+/CombiCSP.egg-info/
+/doc/tex/
+/.vscode/settings.json
