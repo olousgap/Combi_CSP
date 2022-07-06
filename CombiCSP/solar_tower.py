@@ -118,6 +118,9 @@ class SolarTowerCalcs():
         """    
         return 1.66741484e-1 + 1.41517577e-2 * np.degrees(self._sl.z(hoy)) - 9.51787164e-5 * np.degrees(self._sl.z((hoy)))**2
     
+    def incident_energy_on_system(self,  Ib:pd.Series, hoy:np.array = HOYS_DEFAULT)->pd.Series:
+        return Ib*self.IAM_tow(hoy)
+
     def mutate(self,   alt = None , Ht = None
         , Ar = None 
         , A_helio = None

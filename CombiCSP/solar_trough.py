@@ -271,7 +271,15 @@ class SolarTroughCalcs():
         else:
             P = Qnet * nR * nG
         return P/1e6 # convert W to MW
-
+    
+    def incident_energy_on_system(self, alignment:str,  Ib:pd.Series, hoy:np.array = HOYS_DEFAULT)->pd.Series:
+        assert alignment in ['EW', 'NS'], 'Alignement should be one of ["EW", "NS"]'
+        if alignment == 'NS':
+            return Ib*self.costhetai_NS(hoy)*self.IAM_tro(hoy)
+        elif alignment == 'EW':
+            return Ib*self.costhetai_EW(hoy)*self.IAM_tro(hoy)
+        else:
+            raise Exception('Alignement should be one of ["EW", "NS"]')
     
     def mutate(self,foc_len = None 
         ,N = None 
