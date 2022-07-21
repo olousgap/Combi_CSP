@@ -4,6 +4,16 @@
     @Date: 2022/mm/dd
     @Credit: original functions from G. Arnaoutakis
 """
+
+""" 
+    This module contains 
+    - data relating to phase change materials 
+    - functions relating to heat energy storage
+
+    TODO: This module should be reviewed and rewritten.
+"""
+
+
 #%%
 '''Concentrating Solar Power plants'''
 import numpy as np
