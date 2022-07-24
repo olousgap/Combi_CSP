@@ -23,7 +23,7 @@ test_requirements = [
 
 setuptools.setup(
     name="CombiCSP", # Replace with your own username
-    version="1.0.0",
+    version="1.5.0",
     author="N. Papadakis, G. Arnaoutakis",
     author_email="npapnet@gmail.com, g.e.arnaoutakis@gmail.com",
     description="A package for Concentrated Solar Collectors and Solar Tower Calculations ",
