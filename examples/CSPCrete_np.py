@@ -60,6 +60,7 @@ sotr = SolarTroughCalcs(
         ,Ws = 18 # [m] width between rows 18 INDITEP in pp.6 Fraidenraich13, pp.5 Zarza06
         ,Wr = 0.07 # tube outer diameter [m]
         ,Wc = 5.76
+        , slobj=sslCrete
         )
 oew = sotr.perform_calcs_EW(Ib=Ib, Tr=Tr)
 ons = sotr.perform_calcs_NS(Ib=Ib, Tr=Tr)
